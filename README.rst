@@ -43,10 +43,12 @@ Installation
 ============
 
 ``ProphTools`` is provided as a python 2.7 package. At the moment it is not 
-available on PyPi, but you can download the tar ball source distribution file 
+available on PyPi, but you can download the `tar ball source distribution file <https://github.com/cnluzon/prophtools/raw/master/dist/prophtools-1.0.tar.gz>`_
 and install it: ::
 
     pip install ./prophtools-1.0.tar.gz
+
+If the above link does not work, you can find the tar.gz file under /dist/ at the prophtools repository.
 
 How to use
 ==========
