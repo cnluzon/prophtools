@@ -1,0 +1,193 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+"""
+Prophtools: Tools for heterogenoeus network prioritization.
+
+Copyright (C) 2016 Carmen Navarro Luzón, Víctor Martínez Gómez
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+.. module :: prophtools
+.. moduleauthor :: C. Navarro Luzón <cnluzon@decsai.ugr.es>
+
+"""
+
+import argparse
+from argparse import RawTextHelpFormatter
+import logging
+import os
+import sys
+
+from prophtools.utils import loggingtools, validation
+
+from prophtools.operations.run import LocalRunExperiment
+from prophtools.stats.loo import LOOExperiment
+
+def get_warranty():
+    warranty = """
+ProphTools v1.0. Copyright (C) 2016 C. Navarro Luzón, V. Martínez Gómez
+-----------------------------------------------------------------------
+ProphTools: Computational tools for network prioritization.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. 
+
+If not, see <http://www.gnu.org/licenses/>.
+   """
+    return warranty
+
+def get_license():
+    license = """
+ProphTools v1.0. Computational tools for network prioritization
+-----------------------------------------------------------------
+
+Copyright (C) 2016 C. Navarro Luzón, V. Martínez Gómez
+
+University of Granada, Spain.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    """
+    return license
+
+def get_help():
+    help_ = """
+usage: prophtools <subcommand> options
+    The prophtools subcommands include:
+        prioritize   Perform prioritization on a set of networks.
+        cross        Perform LOO-cross validation for a given network setup.
+    """
+    return help_
+
+def print_warranty():
+    print get_warranty()
+
+def print_license():
+    print get_license()
+
+class ProphtoolsParser(argparse.ArgumentParser):
+    def error(self, message):
+        self.print_help()
+        print message
+        sys.exit(2)
+
+if __name__ == "__main__":
+
+    parser = ProphtoolsParser(
+        description='{}{}'.format(get_license(), get_help()),
+        formatter_class=RawTextHelpFormatter)
+
+    parser.add_argument('subcommand',
+                        help='command to execute.',
+                        choices=['prioritize', 'cross'],
+                        default='prioritize',
+                        nargs='?')
+
+    parser.add_argument('-v',
+                        '--verbose',
+                        help='add some verbosity to the output',
+                        action='count',
+                        default=0)
+
+    parser.add_argument('-w',
+                        '--warranty',
+                        help='show some info on prophtools\' warranty.',
+                        action='store_true')
+
+    parser.add_argument('--about',
+                        help='show some info on prophtools\' license.',
+                        action='store_true')
+
+    # covered by REMAINDER now
+    # Takes the rest of the arguments in a remainder.
+    # TODO: There is a bug in python (see http://bugs.python.org/issue14174),
+    # and args.override
+    # could take part of the optional defined arguments.
+    # If that happens, try to remove this from here and handle the arguments
+    # manually, otherwise, try to put
+    # the optional arguments BEFORE the POSITIONAL argument (in_file)
+    parser.add_argument('override', nargs=argparse.REMAINDER)
+
+    if len(sys.argv)==1:
+        parser.print_help()
+        sys.exit(1)
+
+    args = parser.parse_args()
+
+    if args.about:
+        print_license()
+        exit(0)
+
+    if args.warranty:
+        print_warranty()
+        exit(0)
+
+    loggingLevel = loggingtools.get_logging_level(args.verbose)
+
+    log_dir = os.getcwd()
+    log_name = "{}.log".format(os.path.basename(sys.argv[0]))
+    log_file = os.path.join(log_dir, log_name)
+
+    loggingtools.init_generic_log(log_file, logging.DEBUG)
+
+    log = logging.getLogger('main')
+
+    console = loggingtools.get_generic_console_handler()
+    console.setLevel(loggingLevel)
+
+    logging.getLogger('main').addHandler(console)
+
+    current_file_dir = os.path.dirname(__file__)
+
+    default_config_name = 'prophtools_default.cfg'
+    default_config_path = os.path.join(current_file_dir, os.path.normpath('../prophtools/config'))
+    default_config_file = os.path.join(os.path.normpath(default_config_path),
+                                       default_config_name)
+
+    if not validation.check_file_exists(default_config_file, log):
+        msg = "Unable to open file {}".format(default_config_file)
+        log.error(msg)
+
+    exp_id = '{}'.format('config_used')
+
+    experiments = {
+        'prioritize': LocalRunExperiment(default_config_file,
+                                  exp_id,
+                                  log,
+                                  section_name='run'),
+
+        'cross': LOOExperiment(default_config_file,
+                               exp_id,
+                               log,
+                               section_name='cross'),
+    }
+
+    result = experiments[args.subcommand].run(args.override, exp_id)
+
