@@ -19,7 +19,6 @@ parts
 *.pyc
 *.pyo
 *.tmp*
-*.mat
 *octave-workspace
 prophnet/test/octave-workspace
 prophnet/config/prophnet-local.cfg
