@@ -1,9 +1,15 @@
-================================================================
-ProphTools v1.0. Tools for Heterogeneous Network prioritization
-================================================================
+=====================================================
+ProphTools v1.0. Heterogeneous Network Prioritization
+=====================================================
 
 Authors: Carmen Navarro Luzón, Víctor Martínez Gómez
 
+.. image:: https://coveralls.io/repos/github/cnluzon/prophtools/badge.svg
+    :target: https://coveralls.io/github/cnluzon/prophtools
+
+.. image:: https://travis-ci.org/cnluzon/prophtools.svg?branch=master
+    :target: https://travis-ci.org/cnluzon/prophtools  
+   
 About ProphTools
 ================
 
@@ -49,6 +55,23 @@ and install it: ::
     pip install ./prophtools-1.0.tar.gz
 
 If the above link does not work, you can find the tar.gz file under /dist/ at the prophtools repository.
+
+Requirements
+============
+
+``ProphTools`` Requires python ``2.7`` to work, along with the following libraries (tested for the specified versions): ::
+
+    numpy (>=1.11.2)
+    scipy (>=0.18.1)
+    matplotlib (>=1.4.3)
+    scikit-learn (>=0.18)
+    networkx (>=1.11) 
+
+All requirements are included in the ``setup.py``. However, scipy documentation suggests installing it through ``apt-get``: <http://www.scipy.org/install.html>. If you run into problems with pip I recommend to previously install scipy, numpy and matplotlib through apt-get to ensure it will work: ::
+
+    sudo apt-get install python-numpy python-scipy python-matplotlib
+    
+    
 
 How to use
 ==========
