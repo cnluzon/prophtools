@@ -180,13 +180,24 @@ Performance test on a network set
 Given an input .mat file, prophtools can also give you an estimation on how
 well the propagation method predicts a certain connection by performing a 
 leave-one-out cross-validation on the relation you choose.
+The required parameters in this case are: ::
 
-The required parameters in this case are:
+    matfile: Input network configuration file
+    src: Origin network
+    dst: Destination network
 
-* matfile: Input network configuration file
-* src: Origin network
-* dst: Destination network
+Optionally, you can specify: ::
 
-Optionally, you can specify
-* cross: Number of groups for the cross validation. By default, this is 5.
-* corr_function: Correlation function used to compute final scores. By default, this is pearson correlation. Optionally, you can specify spearman.
+    cross: Number of groups for the cross validation. By default, this is 5.
+    corr_function: Correlation function used to compute final scores. 
+                   By default, this is pearson correlation. Optionally, you can specify spearman.
+
+For instance, to run ``ProphTools`` cross validation on the example data using spearman correlation function: ::
+
+    prophtools cross --matfile example.mat --src 0 --dst 2 --cross 5 --out results --corr_function spearman
+    
+Using the defaults: ::
+
+    prophtools cross --matfile example.mat --src 0 --dst 2
+    
+
