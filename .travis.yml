@@ -6,8 +6,9 @@ python:
 before_install:
   - sudo apt-get install python-numpy python-scipy python-matplotlib
 install:
+  - pip install coveralls
   - pip install .
 # command to run tests
-script: nosetests
+script: nosetests --with-coverage --cover-package=prophtools
 after_success:
   - coveralls
