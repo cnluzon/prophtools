@@ -13,7 +13,7 @@ setup(name='prophtools',
       author_email='cnluzon@decsai.ugr.es',
       license='GNU GPLv3',
       packages=['prophtools'],
-      install_requires=['scipy', 'numpy', 'networkx', 'sklearn'],
+      install_requires=['scipy', 'numpy', 'networkx', 'sklearn', 'matplotlib'],
       # dependency_links=[],
       classifiers=[
           'Programming Language :: Python :: 2.7',
