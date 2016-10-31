@@ -3,7 +3,7 @@
 import unittest
 import networkx as nx
 import numpy as np
-
+import os
 from prophtools.common.method import ProphNet
 from prophtools.common.graphdata import GraphDataSet
 
@@ -13,7 +13,9 @@ class TestProphNetFunctions(unittest.TestCase):
     Test for ProphNet class
     """
     def load_test_data(self):
-        self.sample_data = GraphDataSet.read('../matfiles/', 'example.mat')
+        script_dir = os.path.dirname(__file__)
+        absolute_path = os.path.join(script_dir, '../matfiles/')
+        self.sample_data = GraphDataSet.read(absolute_path, 'example.mat')
         self.prophnet = ProphNet(self.sample_data)
 
     def setUp(self):
