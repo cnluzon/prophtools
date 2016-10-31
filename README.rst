@@ -13,40 +13,40 @@ network by means of a hybrid approach including a Random Walk with Restarts
 within network approach and propagation across different networks based on these
 results. Final scores are computed correlating the results from
 propagating from the query network to the target network and correlating target
-nodes from within the target network. ProphTools is based on the methodology
-applied to create ProphNet, a web based prioritization tool that performs
+nodes from within the target network. ``ProphTools`` is based on the core 
+methodology applied to create ``ProphNet``, a web-based prioritization tool that performs
 queries on a specific gene-domain-disease network.
 
-The methodology has been improved to be able to handle any type of network
-configuration, so as a user you can now download ProphTools package, set up
-your data as a network configuration and run queries and performance tests on
-it.
+ProphTools methodology allows to handle any type of network
+configuration, so you can now download the ``ProphTools`` package,
+set up your network configuration and run queries and performance tests.
 
-In addition, as the source code is provided, you are free to use ProphTools
+In addition, as the source code is provided, you are free to use ``ProphTools``
 as an API and pass your network configuration as a ``GraphDataSet`` object to a 
 ProphNet prioritizer. 
 
 For more specific information about the propagation algorithms, please read our 
-`paper <http://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-15-S1-S5>`_:
+`publication <http://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-15-S1-S5>`_:
 
 Martínez, Víctor, Carlos Cano, and Armando Blanco. 
-"ProphNet: A generic prioritization method through propagation of information." 
+**ProphNet: A generic prioritization method through propagation of information.**
 BMC bioinformatics 15.1 (2014): 1.
 
 
 License
 =======
-ProphTools is implemented in python and source code is provided under the 
+``ProphTools`` is implemented in python and source code is provided under the 
 GPLv3.0 license. You can see more about its terms on the LICENSE.txt file.
 
 
 Installation
 ============
 
-ProphTools is provided as a python 2.7 package. At the moment it is not on PyPi,
-but you can download the tar ball source distribution file and install it:
+``ProphTools`` is provided as a python 2.7 package. At the moment it is not 
+available on PyPi, but you can download the tar ball source distribution file 
+and install it:
 
-``pip install ./prophtools-1.0.tar.gz``
+```pip install ./prophtools-1.0.tar.gz```
 
 How to use
 ==========
@@ -66,11 +66,12 @@ node indexes that are going to be propagated).
 
 For instance:
 
-``prophtools prioritize --matfile network.mat --src 0 --dst 2 --query 1,2``
+```prophtools prioritize --matfile network.mat --src 0 --dst 2 --query 1,2```
 
 will return a scored list of nodes from the destination network and their
 correlation scores:
 
+.. code:: python 
 Entity  Score
 c_00017   0.1016
 c_00003   0.0902
