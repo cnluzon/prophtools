@@ -34,12 +34,12 @@ class TestEntityNetFunctions(unittest.TestCase):
         self.node_names = ['a0', 'a1', 'a2', 'a3', 'a4', 'a5', 'a6']
 
         self.net_b = np.matrix([
-            [0.00, 0.50, 0.00, 0.00, 0.65, 0.89, 0.00],
-            [0.50, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00],
-            [0.00, 0.00, 0.00, 1.00, 0.00, 0.00, 0.00],
-            [0.00, 0.00, 1.00, 0.00, 0.00, 0.00, 0.00],
-            [0.65, 0.00, 0.00, 0.00, 0.00, 0.00, 2.10],
-            [0.89, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00]])
+            [0.00, 0.50, 0.00, 0.00, 0.65, 0.89],
+            [0.50, 0.00, 0.00, 0.00, 0.00, 0.00],
+            [0.00, 0.00, 0.00, 1.00, 0.00, 0.00],
+            [0.00, 0.00, 1.00, 0.00, 0.00, 0.00],
+            [0.65, 0.00, 0.00, 0.00, 0.00, 0.00],
+            [0.89, 0.00, 0.00, 0.00, 0.00, 0.00]])
 
         self.net_b_precomp = np.matrix([
             [0.00, 0.50, 0.00, 0.00, 0.65, 0.89, 0.00],
@@ -48,6 +48,15 @@ class TestEntityNetFunctions(unittest.TestCase):
             [0.00, 0.00, 1.00, 0.00, 0.00, 0.00, 0.00],
             [0.65, 0.00, 0.00, 0.00, 0.00, 0.00, 2.10],
             [0.89, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00]])
+
+        self.rel_ab = np.matrix([
+            [0.00, 0.50, 0.00, 0.00, 0.65, 0.89],
+            [0.50, 0.00, 0.00, 0.00, 0.00, 0.00],
+            [0.00, 0.00, 0.00, 1.00, 0.00, 0.00],
+            [0.00, 0.00, 1.00, 0.00, 0.00, 0.00],
+            [0.65, 0.00, 0.00, 0.00, 0.00, 0.00],
+            [0.89, 0.00, 0.00, 0.00, 0.00, 0.00],
+            [0.89, 0.00, 0.00, 0.00, 0.00, 0.00]])
 
     def setUp(self):
         self.load_test_data()
@@ -111,6 +120,67 @@ class TestEntityNetFunctions(unittest.TestCase):
         self.assertEqual(subset.matrix[0, 1], 0.00)
         self.assertEqual(subset.matrix[1, 0], 0.00)
         self.assertEqual(subset.matrix[1, 1], 0.00)
+
+    def test_relation_net_from_raw_no_errors(self):
+        r = RelationNet(self.rel_ab, "Relation")
+
+    def test_relation_net_densify_leaves_dense_matrix_dense(self):
+        r = RelationNet(self.rel_ab, "Relation")
+        r.densify()
+
+        self.assertEqual(type(r.matrix), np.matrix)
+
+    def test_relation_net_densify_makes_sparse_matrix_dense(self):
+        sp = sparse.csr_matrix(self.rel_ab)
+        self.assertTrue(sparse.issparse(sp))
+        r = RelationNet(sp, "Relation")
+        r.densify()
+        self.assertEqual(type(r.matrix), np.matrix)
+
+    def test_is_sparse_returns_true_for_csr_matrix(self):
+        sp = sparse.csr_matrix(self.rel_ab)
+        r = RelationNet(sp, "Relation")
+        self.assertTrue(r.is_sparse())
+
+    def test_is_sparse_returns_false_for_numpy_matrix(self):
+        r = RelationNet(self.rel_ab, "Relation")
+        self.assertFalse(r.is_sparse())
+
+    def test_transpose_does_not_change_object_matrix_shape(self):
+        r = RelationNet(self.rel_ab, "Relation")
+        shape_before = r.matrix.shape
+        transposed = r.transpose()
+        shape_after = r.matrix.shape
+
+        self.assertEqual(shape_before, shape_after)
+
+    def test_transpose_returns_a_transposed_relation_net(self):
+        r = RelationNet(self.rel_ab, "Relation")
+        shape_before = r.matrix.shape
+        transposed = r.transpose()
+        shape_after = r.matrix.shape
+
+        self.assertNotEqual(shape_before, transposed.matrix.shape)
+    
+    def test_entity_net_from_raw_no_errors(self):
+        e = EntityNet.from_raw_matrix(self.net_a, 'Net', self.node_names)
+
+    def test_entity_net_from_raw_non_squared_raises_exception(self):
+        with self.assertRaises(ValueError):
+            e = EntityNet.from_raw_matrix(self.rel_ab, 'Net', self.node_names)
+
+    def test_entity_net_is_sparse_returns_false_for_numpy_matrix(self):
+        e = EntityNet(self.net_a, 'Net', self.node_names,
+                      precomputed=self.net_a_precomp)
+
+        self.assertFalse(e.is_sparse())
+
+    def test_entity_net_is_sparse_returns_true_for_csr_matrix(self):
+        sp = sparse.csr_matrix(self.net_a)
+        e = EntityNet(sp, 'Net', self.node_names,
+                      precomputed=self.net_a_precomp)
+
+        self.assertTrue(e.is_sparse())
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(TestEntityNetFunctions)
