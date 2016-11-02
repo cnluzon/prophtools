@@ -71,10 +71,6 @@ class Experiment:
         else:
             self.config = self._create_default_config()
 
-    def _create_default_config(self):
-        raise(NotImplementedError("Either trying to use abstract Experiment "
-                                  "class or forgot to implement this method"))
-
     def _override_config_values(self, parameter_dict):
         try:
             self.config.add_section("{}_overridden".format(self.params_section))
@@ -123,6 +119,7 @@ class Experiment:
             parameter_dict = self._generate_dict(override_list)
         self._override_config_values(parameter_dict)
         self._write_config()
+        print "HOLI"
         exp_result = self.experiment(extra_params)
         return exp_result
 
@@ -132,12 +129,6 @@ class Experiment:
             print "[%s]" % s
             for key, value in self.config.items(s):
                 print key, value
-
-    def experiment(self, extra_params=None):
-        msg = ("Either trying to use abstract Experiment "
-               " class or forgot to implement this method")
-
-        raise(NotImplementedError(msg))
 
     def _generate_dict(self, param_list):
         result = {}
@@ -168,23 +159,3 @@ class Experiment:
         missing_str = ', '.join(missing)
         msg = 'Cannot properly run this experiment, missing parameters: {}'.format(missing_str)
         return msg
-
-    def clean_directory(self, d, except_files=[]):
-        file_in_exception = False
-        current_dir = os.getcwd()
-        self.log.debug("current dir: " + current_dir)
-        self.log.debug("Listing directory: " + d)
-
-        for the_file in os.listdir(d):
-            file_path = os.path.join(d, the_file)
-            for e in except_files:
-                if e == the_file:
-                    file_in_exception = True
-
-            try:
-                if os.path.isfile(file_path) and not file_in_exception:
-                    os.unlink(file_path)
-            except Exception, e:
-                print e
-            file_in_exception = False
-        return

@@ -9,7 +9,6 @@ import prophtools.utils.loggingtools as loggingtools
 import sys
 import StringIO
 import mock
-from prophtools.common.method import ProphNet
 from prophtools.common.graphdata import GraphDataSet
 from prophtools.stats.metrics import PrioritizationTest
 

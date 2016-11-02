@@ -26,8 +26,9 @@ def try_to_open_file(filename, log):
             log.info("File " + filename + " opened successfully")
     except IOError:
         log.error("Unable to open input file " + filename)
+        return False
 
-    return
+    return True
 
 
 def verify_natural_number(v, vName, log):
@@ -51,10 +52,3 @@ def verify_numeric_value(v, vName, minVal, maxVal, log):
         log.error("Invalid " + vName + " value: Must be a number between " + str(minVal) + " and " + str(maxVal) + ".")
 
     return is_ok
-
-def get_file_directory(filename):
-    return os.path.realpath(filename)
-
-
-def strip_file_directory(filename):
-    return os.path.basename(filename)
