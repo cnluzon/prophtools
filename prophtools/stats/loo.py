@@ -83,7 +83,6 @@ Optional parameters:
             full_matfile_path = os.path.join(cfg_params['data_path'],
                                              cfg_params['matfile'])
 
-
             if not validation.check_file_exists(full_matfile_path, self.log):
                 print "Exiting"
                 return -1
@@ -100,11 +99,12 @@ Optional parameters:
 
             prioritizer_test = metrics.PrioritizationTest(prioritizer)
             prioritizer_test.run_cross_validation(
-                src, dst, fold=cfg_params.get('cross', None),
+                src, dst, fold=cfg_params.get('cross', 5),
                 out=cfg_params['out'],
                 corr_function=cfg_params['corr_function'])
 
             self.log.info("Cross validation run successfully.")
-
+            return 0
         else:
             self._print_help()
+            return -1
