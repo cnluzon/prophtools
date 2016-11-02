@@ -4,6 +4,7 @@ import unittest
 import numpy as np
 
 from prophtools.utils.preprocessing import precompute_matrix, normalize_matrix
+import scipy.sparse as sparse
 
 """
 Test for preprocessing methods class.
@@ -71,13 +72,6 @@ class TestPreprocessingFunctions(unittest.TestCase):
 
         pass
 
-    def compare_matrices_exact(self, a, b):
-        for i in range(a.shape[0]):
-            for j in range(a.shape[0]):
-                if a[i,j] != b[i,j]:
-                    return False
-        return True
-
     def compare_matrices_epsilon(self, a, b, epsilon=0.001):
         for i in range(a.shape[0]):
             for j in range(a.shape[0]):
@@ -85,7 +79,7 @@ class TestPreprocessingFunctions(unittest.TestCase):
                     return False
         return True
 
-    def test_normalization_twice_NOT_same_result(self):
+    def test_normalization_twice_not_same_result(self):
         epsilon = 0.001
         normalized = normalize_matrix(self.net_d)
         normalized_twice = normalize_matrix(normalized)
@@ -93,7 +87,25 @@ class TestPreprocessingFunctions(unittest.TestCase):
         self.assertFalse(self.compare_matrices_epsilon(normalized,
                                                        normalized_twice,
                                                        epsilon=epsilon))
-       
+    def test_normalize_matrix_keeps_dense_result(self):
+
+        normalized = normalize_matrix(self.net_d)
+        self.assertFalse(sparse.issparse(normalized))
+
+    def test_normalize_matrix_keeps_sparse_result(self):
+
+        sparse_d = sparse.csr_matrix(self.net_d)
+        normalized = normalize_matrix(sparse_d)
+        self.assertTrue(sparse.issparse(normalized))
+
+    def test_precompute_matrix_returns_sparse_result(self):
+
+        normalized = normalize_matrix(self.net_d)
+        precomputed = precompute_matrix(normalized)
+
+        self.assertTrue(sparse.issparse(precomputed))
+
+
 if __name__ == '__main__':
 
     suite = unittest.TestLoader().loadTestsFromTestCase(TestPreprocessingFunctions)

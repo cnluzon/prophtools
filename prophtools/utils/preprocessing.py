@@ -28,7 +28,7 @@ def precompute_matrix(m):
     Returns the precomputed matrix for a normalized adjacency matrix m.
     m Must be normalized.
 
-    Keeps the type of the matrix (dense or sparse)
+    Returns a sparse matrix (TODO: Change to keep sparsity)
 
     Arguments:
         m:      sparse matrix (normalized)
@@ -50,6 +50,7 @@ def normalize_matrix(m):
     """
     Returns the normalized matrix for an adjacency matrix m.
 
+    Keeps the type of matrix (dense or sparse)
     Arguments:
         m:      csr_sparse matrix to normalize (sparse)
         

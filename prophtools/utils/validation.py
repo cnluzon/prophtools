@@ -42,7 +42,6 @@ def verify_numeric_value_over_value(v, vName, minVal, log):
 
     return True
 
-
 def verify_numeric_value(v, vName, minVal, maxVal, log):
     is_ok = True
     if ((v < minVal) or (v > maxVal)):
@@ -52,20 +51,6 @@ def verify_numeric_value(v, vName, minVal, maxVal, log):
         log.error("Invalid " + vName + " value: Must be a number between " + str(minVal) + " and " + str(maxVal) + ".")
 
     return is_ok
-
-
-def check_extension(filename, ext):
-    """
-    Checks if filename has the corresponding extension.
-    """
-    last_dot = filename.rfind('.')
-    if last_dot > 1:
-        if filename[last_dot+1:] == ext:
-            return True
-        else:
-            return False
-    elif not ext:
-        return True     # If no dot and no ext, file has no extension
 
 def get_file_directory(filename):
     return os.path.realpath(filename)

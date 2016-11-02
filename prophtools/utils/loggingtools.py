@@ -8,9 +8,6 @@ General functions for initializing logging modules
 """
 
 import logging.config
-import os
-import json
-
 
 def init_logging_no_file(log_level):
     # Log file
