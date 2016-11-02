@@ -1,4 +1,7 @@
 language: python
+os:
+  - linux
+  - osx
 sudo: required
 python:
   - "2.7"
