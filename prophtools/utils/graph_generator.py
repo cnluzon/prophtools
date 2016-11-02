@@ -3,25 +3,15 @@
 """
 Prophtools: Tools for heterogenoeus network prioritization.
 
-Copyright (C) 2016 Carmen Navarro Luzón <cnluzon@decsai.ugr.es>
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+Copyright (C) 2016 Carmen Navarro Luzón <cnluzon@decsai.ugr.es> GPLv3
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-Generating random graphs functions
+Generating random network configurations example.
 
 .. module :: graph_generator.py
-.. author :: Carmen Navarro <cnluzon@decsai.ugr.es>
+.. author :: C. Navarro Luzón <cnluzon@decsai.ugr.es>
 
 """
 import argparse
@@ -36,7 +26,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Generate a random sample .mat file with a set of three graphs")
 
-    parser.add_argument('-o', '--out', help='.mat file')
+    parser.add_argument('-o', '--out', help='.mat file', default="out.mat")
 
     args = parser.parse_args()
 
@@ -60,8 +50,6 @@ if __name__ == "__main__":
         node_name_list = ['{}_{:05d}'.format(nname, i) for i in range(nsize)]
         network_node_names[nname] = node_name_list
         networks[nname] = nx.gnp_random_graph(nsize, ndens)
-
-        print networks[nname].size(), networks[nname].order()
 
         entities.append(graphdata.EntityNet.from_raw_matrix(
             nx.to_scipy_sparse_matrix(networks[nname]),

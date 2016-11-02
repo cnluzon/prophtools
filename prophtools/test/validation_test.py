@@ -26,6 +26,15 @@ class TestValidationFunctions(unittest.TestCase):
         """Function to do cleaning up after the test."""
         shutil.rmtree(self.tempdir)
 
+    def test_log_level_debug(self):
+        self.assertEqual(loggingtools.get_logging_level(2), logging.DEBUG)
+
+    def test_log_level_info(self):
+        self.assertEqual(loggingtools.get_logging_level(1), logging.INFO)
+
+    def test_log_level_warning(self):
+        self.assertEqual(loggingtools.get_logging_level(0), logging.WARNING)
+
     def test_file_exists_true_when_file_exists(self):
         self.assertTrue(validation.check_file_exists(self.tempfile))
 

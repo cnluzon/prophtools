@@ -119,7 +119,6 @@ class Experiment:
             parameter_dict = self._generate_dict(override_list)
         self._override_config_values(parameter_dict)
         self._write_config()
-        print "HOLI"
         exp_result = self.experiment(extra_params)
         return exp_result
 
