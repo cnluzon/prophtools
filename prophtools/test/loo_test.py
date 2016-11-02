@@ -61,9 +61,8 @@ out = stats
         self.assertEqual(result, -1)
 
     @mock.patch.object(GraphDataSet, 'read')
-    @mock.patch.object(ProphNet, 'propagate')
     @mock.patch.object(PrioritizationTest, 'run_cross_validation')
-    def test_required_parameters_required(self, mock_run_cross_validation, mock_propagate, mock_read):
+    def test_required_parameters_required(self, mock_run_cross_validation, mock_read):
         cfg_path = os.path.join(self.tempdir, self.configname)
         
         exp = loo.LOOExperiment(cfg_path, 'cross', self.log, section_name='cross')
@@ -78,7 +77,6 @@ out = stats
         sys.stdout = sys.__stdout__
 
         mock_read.assert_called_with('.', matfile)
-        mock_propagate.assert_called()
         mock_run_cross_validation.assert_called_with(0,
                                                      1,
                                                      fold=5,
