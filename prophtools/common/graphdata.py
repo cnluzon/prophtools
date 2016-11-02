@@ -201,17 +201,8 @@ class GraphDataSet:
 
         self.dot_values = self.precompute_dot_values()
 
-    @classmethod
-    def read(cls, data_path, data_file):
-        """
-        Loads network data.
-
-        Assumes these matrices are normalized and there are precomputed
-        matrices as well, and that the names are followed by "_name" and
-        "_precomputed" to indicate which data the entities contain.
-        """
-        data = sio.loadmat(os.path.join(data_path, data_file))
-
+    @staticmethod
+    def _extract_nets_from_data_dictionary(data):
         network_names = data['entities']
         network_names = [n.rstrip().encode("utf8") for n in network_names]
         relation_names = data['relations']
@@ -233,6 +224,21 @@ class GraphDataSet:
         for name in relation_names:
             new_relation = RelationNet(data[name], name)
             relation_nets.append(new_relation)
+
+        return [entity_nets, relation_nets, connections]
+
+    @classmethod
+    def read(cls, data_path, data_file):
+        """
+        Loads network data.
+
+        Assumes these matrices are normalized and there are precomputed
+        matrices as well, and that the names are followed by "_name" and
+        "_precomputed" to indicate which data the entities contain.
+        """
+        data = sio.loadmat(os.path.join(data_path, data_file))
+
+        entity_nets, relation_nets, connections = GraphDataSet._extract_nets_from_data_dictionary(data)
 
         return cls(entity_nets, relation_nets, connections, densify=False)
 
@@ -440,7 +446,6 @@ class GraphDataSet:
             index_choices = random.sample(range(n.matrix.shape[0]), random_size)
             node_list_per_net.append(index_choices)
 
-        print node_list_per_net
         return node_list_per_net
 
     def random_subset(self, random_size):

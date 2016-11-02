@@ -6,7 +6,9 @@ import numpy as np
 from prophtools.common.graphdata import EntityNet, RelationNet, GraphDataSet
 
 from scipy import sparse
-
+import StringIO
+import scipy.io as sio
+import shutil, tempfile
 
 class TestEntityNetFunctions(unittest.TestCase):
     """
@@ -32,7 +34,7 @@ class TestEntityNetFunctions(unittest.TestCase):
             [0.17,  0.07,  0.00, 0.00, 0.32, 0.10,  0.35]])
         self.name = 'net_a'
         self.node_names = ['a0', 'a1', 'a2', 'a3', 'a4', 'a5', 'a6']
-
+        self.node_names_b = ['b0', 'b1', 'b2', 'b3', 'b4', 'b5']
         self.net_b = np.matrix([
             [0.00, 0.50, 0.00, 0.00, 0.65, 0.89],
             [0.50, 0.00, 0.00, 0.00, 0.00, 0.00],
@@ -58,13 +60,14 @@ class TestEntityNetFunctions(unittest.TestCase):
             [0.89, 0.00, 0.00, 0.00, 0.00, 0.00],
             [0.89, 0.00, 0.00, 0.00, 0.00, 0.00]])
 
+
     def setUp(self):
         self.load_test_data()
+        self.test_dir = tempfile.mkdtemp()
 
     def tearDown(self):
         """Function to do cleaning up after the test."""
-
-        pass
+        shutil.rmtree(self.test_dir)
 
     def test_densify_keep_dense_matrix(self):
         a_from_raw = EntityNet.from_raw_matrix(self.net_a, self.name, self.node_names)
@@ -181,6 +184,50 @@ class TestEntityNetFunctions(unittest.TestCase):
                       precomputed=self.net_a_precomp)
 
         self.assertTrue(e.is_sparse())
+
+    def test_good_values_graphdataset_raises_no_exception(self):
+        ent_a = EntityNet(self.net_a, "net_a", self.node_names, self.net_a_precomp)
+        ent_b = EntityNet(self.net_b, "net_b", self.node_names_b, self.net_b_precomp)
+        rel = RelationNet.from_raw_matrix(self.rel_ab, "rel_ab")
+        connections = np.matrix([[-1, 0], [-1, -1]])
+
+        dataset = GraphDataSet([ent_a, ent_b], [rel], connections)
+
+    def test_read_write_consistency(self):
+        matfile = 'testmat.mat'
+        ent_a = EntityNet(self.net_a, "net_a", self.node_names, self.net_a_precomp)
+        ent_b = EntityNet(self.net_b, "net_b", self.node_names_b, self.net_b_precomp)
+        rel = RelationNet.from_raw_matrix(self.rel_ab, "rel_ab")
+        connections = np.matrix([[-1, 0], [-1, -1]])
+        dataset = GraphDataSet([ent_a, ent_b], [rel], connections)
+
+        dataset.write(self.test_dir, matfile)
+        new_dataset = GraphDataSet.read(self.test_dir, matfile)
+
+        self.assertEqual(len(new_dataset.networks), len(dataset.networks))
+        self.assertEqual(len(new_dataset.relations), len(dataset.relations))
+        self.assertEqual(new_dataset.connections.shape, dataset.connections.shape)
+
+    def test_graphdataset_densify_generates_dense_matrices(self):
+        ent_a = EntityNet(self.net_a, "net_a", self.node_names, self.net_a_precomp)
+        ent_b = EntityNet(self.net_b, "net_b", self.node_names_b, self.net_b_precomp)
+        rel = RelationNet.from_raw_matrix(self.rel_ab, "rel_ab")
+        connections = np.matrix([[-1, 0], [-1, -1]])
+
+        dataset = GraphDataSet([ent_a, ent_b], [rel], connections, densify=True)
+
+        self.assertFalse(sparse.issparse(dataset.networks[0].matrix))
+        self.assertFalse(sparse.issparse(dataset.networks[1].matrix))
+        self.assertFalse(sparse.issparse(dataset.relations[0].matrix))
+
+    def test_not_precomputed_raises_not_implemented_error(self):
+        ent_a = EntityNet(self.net_a, "net_a", self.node_names)
+        ent_b = EntityNet(self.net_b, "net_b", self.node_names_b)
+        rel = RelationNet.from_raw_matrix(self.rel_ab, "rel_ab")
+        connections = np.matrix([[-1, 0], [-1, -1]])
+
+        with self.assertRaises(NotImplementedError):
+            dataset = GraphDataSet([ent_a, ent_b], [rel], connections)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(TestEntityNetFunctions)

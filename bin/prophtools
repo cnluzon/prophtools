@@ -135,7 +135,7 @@ if __name__ == "__main__":
     # the optional arguments BEFORE the POSITIONAL argument (in_file)
     parser.add_argument('override', nargs=argparse.REMAINDER)
 
-    if len(sys.argv)==1:
+    if len(sys.argv) == 1:
         parser.print_help()
         sys.exit(1)
 
@@ -179,9 +179,9 @@ if __name__ == "__main__":
 
     experiments = {
         'prioritize': LocalRunExperiment(default_config_file,
-                                  exp_id,
-                                  log,
-                                  section_name='run'),
+                                         exp_id,
+                                         log,
+                                         section_name='run'),
 
         'cross': LOOExperiment(default_config_file,
                                exp_id,

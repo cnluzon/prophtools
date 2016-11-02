@@ -102,7 +102,6 @@ Optional parameters:
         self.log.info("Running Prioritization.")
         self.log.info("Parsing parameters from config file.")
         required = ['matfile', 'src', 'dst', 'query']
-
         if self._are_required_parameters_valid(self.config, required):
             cfg_params = self._load_parameters("run")
 
@@ -134,5 +133,7 @@ Optional parameters:
                                   corr_function=cfg_params['corr_function'])
 
             self.log.info("Experiment run successfully.")
+            return 0
         else:
             self._print_help()
+            return -1
