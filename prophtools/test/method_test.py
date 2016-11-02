@@ -76,16 +76,6 @@ class TestProphNetFunctions(unittest.TestCase):
         result = ProphNet.match_matrix_dimensions(mat_b, mat_a)
         self.assertEquals(result.shape[0], 2)
 
-    def compare_arrays_epsilon(self, a_1, a_2, epsilon=0.001):
-        if len(a_1) != len(a_2):
-            return False
-
-        for i in range(len(a_1)):
-            if (abs(a_1[i] - a_2[i]) > epsilon):
-                return False
-
-        return True
-
     def test_unknown_method_raises_exception(self):
         with self.assertRaises(ValueError):
             ProphNet(self.sample_data, method="not_valid")
@@ -139,15 +129,15 @@ class TestProphNetFunctions(unittest.TestCase):
         names_dst = self.prophnet.graphdata.networks[dst].node_names
         return (scores[0][1] in names_dst)
 
-    def test_across_network_propagation_returns_dst_net_tags(self):
+    def test_across_network_propagation_returns_dst_net_tags_forward(self):
         result = self._across_network_propagation_dst_names_test([1], 0, 1)
         self.assertTrue(result)
 
-    def test_across_network_propagation_returns_dst_net_tags(self):
+    def test_across_network_propagation_returns_dst_net_tags_reverse(self):
         result = self._across_network_propagation_dst_names_test([1], 1, 0)
         self.assertTrue(result)
 
-    def test_across_network_propagation_returns_dst_net_tags(self):
+    def test_across_network_propagation_returns_dst_net_tags_forward_2(self):
         result = self._across_network_propagation_dst_names_test([1], 0, 2)
         self.assertTrue(result)
 

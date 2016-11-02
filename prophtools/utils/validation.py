@@ -8,6 +8,7 @@
 import os
 import re
 
+
 def check_file_exists(filename, log=None):
     if os.path.isfile(filename):
         return True
@@ -18,6 +19,7 @@ def check_file_exists(filename, log=None):
 
         return False
 
+
 def try_to_open_file(filename, log):
     try:
         with open(filename):
@@ -27,8 +29,10 @@ def try_to_open_file(filename, log):
 
     return
 
+
 def verify_natural_number(v, vName, log):
     return verify_numeric_value_over_value(v, vName, 0, log)
+
 
 def verify_numeric_value_over_value(v, vName, minVal, log):
     if v <= minVal:
@@ -62,68 +66,6 @@ def check_extension(filename, ext):
             return False
     elif not ext:
         return True     # If no dot and no ext, file has no extension
-
-
-def generate_dict_from_remainder(param_list):
-    result = dict()
-    for i in range(len(param_list) - 1):
-        if param_list[i][0] == '-' and param_list[i][1] == '-':
-            result[param_list[i].lstrip('-')] = param_list[i+1]
-
-    return result
-
-
-def remove_repeated(args_list, log):
-    no_repeats_list = []
-    no_repeats_key_list = []
-
-    for i in range(len(args_list) - 1):
-        if args_list[i][0:2] == '--':
-            key = args_list[i].lstrip('-')
-            if key not in no_repeats_key_list:
-                no_repeats_key_list.append(key)
-                no_repeats_list.append(args_list[i])
-                no_repeats_list.append(args_list[i+1])
-            else:
-                log.warning("Repeated key " + key + " new value " + args_list[i+1] + " will be ignored")
-        elif args_list[i][0] == '-':
-            log.warning("Only -- optional args used to override. Found " + args_list[i] + " key, will be removed.")
-
-    if args_list:
-        if args_list[-1][0:1] == '--':
-            last_key = args_list[-1].lstrip('-')
-            if last_key not in no_repeats_key_list:
-                no_repeats_key_list.append(last_key)
-                no_repeats_list.append(args_list[-1])
-
-            else:
-                log.warning("Repeated key " + key + " new value " + args_list[i+1] + " will be ignored")
-
-    log.debug(str(no_repeats_list))
-    return no_repeats_list
-
-
-def validate_overridden_values(overriden, optional_args_list, log):
-
-    for a in optional_args_list:
-        if a in overriden:
-            warning_msg = ("Found optional value %s in the arguments to override. "
-                           "Results could be affected. To solve this at the moment, "
-                           "put the optional arguments before the positional ones. " % str(a)
-                           )
-            log.warning(warning_msg)
-    # override_dict = generate_dict(args.override)
-
-    for a in overriden:
-        if re.match('-v+', a):
-            warning_msg = ("Verbosity count found in the arguments to override. "
-                           "If this is an error, you might not see verbosity output. "
-                           "Please put your %s before the positional arguments. " % str(a)
-                           )
-            log.warning(warning_msg)
-
-    remove_repeated(overriden, log)
-
 
 def get_file_directory(filename):
     return os.path.realpath(filename)

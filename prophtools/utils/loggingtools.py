@@ -45,22 +45,3 @@ def get_logging_level(verbose_count):
         logging_level = logging.INFO
 
     return logging_level
-
-
-def init_log_from_file(config_file='../config/logging.json', log_level=logging.DEBUG, env_key='LOG_CFG'):
-    """
-    Setup logging configuration. Gets the path for logging from environment key LOG_CFG
-    """
-    log_config_env = os.getenv(env_key, None)
-    path = config_file
-    if log_config_env:
-        path = log_config_env
-
-    if os.path.exists(path):
-        with open(path, 'rt') as f:
-            
-            config = json.load(f)
-        logging.config.dictConfig(config)
-    else:
-        init_generic_log('./info.log', log_level)
-

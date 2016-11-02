@@ -4,11 +4,11 @@ import unittest
 import numpy as np
 
 from prophtools.common.graphdata import EntityNet, RelationNet, GraphDataSet
-
+from prophtools.utils.preprocessing import precompute_matrix
 from scipy import sparse
-import StringIO
-import scipy.io as sio
-import shutil, tempfile
+import shutil
+import tempfile
+import mock
 
 class TestEntityNetFunctions(unittest.TestCase):
     """
@@ -95,14 +95,22 @@ class TestEntityNetFunctions(unittest.TestCase):
                                    new_names,
                                    precomputed=self.net_a_precomp)
 
-    def test_non_square_matrix_raises_exception(self):
+    def test_non_matching_names_length_matrix_shape_raises_exception(self):
         with self.assertRaises(ValueError):
-            b_from_raw = EntityNet(self.net_b,
-                                   self.name,
-                                   self.node_names,
-                                   precomputed=self.net_b_precomp)
+            entity = EntityNet(self.net_b,
+                               self.name,
+                               self.node_names,
+                               precomputed=self.net_b_precomp)
 
-    def test_dims_difference_precomputed_matrix_raise_eception(self):
+    def test_non_squared_matrix_shape_raises_exception(self):
+        with self.assertRaises(ValueError):
+            entity = EntityNet(self.rel_ab,
+                               self.name,
+                               self.node_names,
+                               precomputed=self.net_b_precomp)
+
+
+    def test_dims_difference_precomputed_matrix_raise_exception(self):
         with self.assertRaises(ValueError):
             a_from_raw = EntityNet(self.net_a,
                                    self.name,
@@ -123,6 +131,19 @@ class TestEntityNetFunctions(unittest.TestCase):
         self.assertEqual(subset.matrix[0, 1], 0.00)
         self.assertEqual(subset.matrix[1, 0], 0.00)
         self.assertEqual(subset.matrix[1, 1], 0.00)
+
+    @mock.patch('prophtools.utils.preprocessing.precompute_matrix')
+    @mock.patch('prophtools.common.graphdata.EntityNet')
+    def test_subset_nodes_precompute_calls_precompute(self, mock_entity_init, mock_precompute_matrix):
+        a = EntityNet(self.net_a,
+                      self.name,
+                      self.node_names,
+                      precomputed=self.net_a_precomp)
+
+        subset = a.subset([1, 2], precompute=True)
+        mock_precompute_matrix.assert_called()
+        mock_entity_init.assert_called()
+
 
     def test_relation_net_from_raw_no_errors(self):
         r = RelationNet(self.rel_ab, "Relation")
@@ -185,13 +206,44 @@ class TestEntityNetFunctions(unittest.TestCase):
 
         self.assertTrue(e.is_sparse())
 
-    def test_good_values_graphdataset_raises_no_exception(self):
+    def _create_good_graphdataset(self):
         ent_a = EntityNet(self.net_a, "net_a", self.node_names, self.net_a_precomp)
         ent_b = EntityNet(self.net_b, "net_b", self.node_names_b, self.net_b_precomp)
         rel = RelationNet.from_raw_matrix(self.rel_ab, "rel_ab")
         connections = np.matrix([[-1, 0], [-1, -1]])
 
         dataset = GraphDataSet([ent_a, ent_b], [rel], connections)
+        return dataset
+
+    def test_good_values_graphdataset_raises_no_exception(self):
+        self._create_good_graphdataset()
+
+    def test_graphdataset_set_matrix_good_values(self):
+        dataset = self._create_good_graphdataset()
+        matrix_before = dataset.relations[0].matrix
+        dataset.set_relation_matrix(0, 1, matrix_before)
+
+        matrix_after = dataset.relations[0].matrix
+        self.assertEqual(matrix_before.shape, matrix_after.shape)
+
+    def test_graphdataset_set_matrix_not_connected_raises_value_error(self):
+        dataset = self._create_good_graphdataset()
+        dataset.super_adjacency = np.matrix([[0, 0], [0, 0]])
+        with self.assertRaises(ValueError):
+            dataset.set_relation_matrix(0, 1, self.rel_ab)
+
+    def test_graphdataset_set_matrix_connected_reverse_transposes_matrix(self):
+        dataset = self._create_good_graphdataset()
+        transposed = np.transpose(self.rel_ab)
+
+        self.assertEqual(transposed.shape[0], self.rel_ab.shape[1])
+        self.assertEqual(transposed.shape[1], self.rel_ab.shape[0])
+
+        dataset.set_relation_matrix(1, 0, transposed)
+
+        self.assertEqual(dataset.relations[0].matrix.shape[0], self.rel_ab.shape[0])
+        self.assertEqual(dataset.relations[0].matrix.shape[1], self.rel_ab.shape[1])
+
 
     def test_read_write_consistency(self):
         matfile = 'testmat.mat'
