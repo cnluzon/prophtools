@@ -34,10 +34,10 @@ ProphNet prioritizer.
 If you use ProphTools, please cite our publication:
 
 Navarro, Carmen, Martínez, Víctor, Cano, Carlos, and Blanco, Armando. 
-**ProphTools: Heterogeneous biological network prioritization tools.**
+**ProphTools: General Prioritization Tools for Heterogeneous Biological Networks.**
 Bioinformatics (2016) - *Submitted*
 
-For more specific information about the propagation algorithms, please read our 
+For more specific information about the propagation algorithms, please read our  
 `publication <http://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-15-S1-S5>`_:
 
 Martínez, Víctor, Cano, Carlos, and Blanco, Armando.
