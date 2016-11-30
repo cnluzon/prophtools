@@ -1,6 +1,6 @@
-=====================================================
-ProphTools v1.0. Heterogeneous Network Prioritization
-=====================================================
+====================================================================================
+ProphTools v1.0. General Prioritization Tools for Heterogeneous Biological Networks
+====================================================================================
 
 Authors: Carmen Navarro Luzón, Víctor Martínez Gómez
 
