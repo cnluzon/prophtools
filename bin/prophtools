@@ -34,6 +34,8 @@ from prophtools.utils import loggingtools, validation
 
 from prophtools.operations.run import LocalRunExperiment
 from prophtools.stats.loo import LOOExperiment
+from prophtools.operations.precompute import NormalizePrecomputeExperiment
+
 
 def get_warranty():
     warranty = """
@@ -47,11 +49,12 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program. 
+along with this program.
 
 If not, see <http://www.gnu.org/licenses/>.
    """
     return warranty
+
 
 def get_license():
     license = """
@@ -77,6 +80,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     """
     return license
 
+
 def get_help():
     help_ = """
 usage: prophtools <subcommand> options
@@ -86,11 +90,14 @@ usage: prophtools <subcommand> options
     """
     return help_
 
+
 def print_warranty():
     print get_warranty()
 
+
 def print_license():
     print get_license()
+
 
 class ProphtoolsParser(argparse.ArgumentParser):
     def error(self, message):
@@ -106,7 +113,7 @@ if __name__ == "__main__":
 
     parser.add_argument('subcommand',
                         help='command to execute.',
-                        choices=['prioritize', 'cross'],
+                        choices=['prioritize', 'cross', 'precompute'],
                         default='prioritize',
                         nargs='?')
 
@@ -187,7 +194,11 @@ if __name__ == "__main__":
                                exp_id,
                                log,
                                section_name='cross'),
+
+        'precompute': NormalizePrecomputeExperiment(default_config_file,
+                                                    exp_id,
+                                                    log,
+                                                    section_name='precompute')
     }
 
     result = experiments[args.subcommand].run(args.override, exp_id)
-

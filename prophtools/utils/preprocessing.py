@@ -10,6 +10,7 @@ Ported from Victor Martínez Octave version.
 """
 
 import scipy.sparse as sparse
+import numpy as np
 
 
 def LG(F, alpha, C_H, maxiter):
@@ -35,7 +36,7 @@ def precompute_matrix(m):
     """
 
     output = sparse.lil_matrix((m.shape))
-    query = sparse.lil_matrix((m.shape[0], 1))
+    query = np.zeros((m.shape[0], 1))
 
     for i in range(m.shape[0]):
         query[i] = 1

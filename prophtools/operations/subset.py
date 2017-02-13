@@ -31,6 +31,7 @@ from prophtools.utils.experiment import Experiment
 
 import prophtools.common.graphdata as graphdata
 
+
 class SubsetGraphExperiment(Experiment):
     """
     Experiment for running a local instance of the prioritization method.
