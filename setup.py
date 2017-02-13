@@ -22,5 +22,6 @@ setup(name='prophtools',
       test_suite='nose.collector',
       tests_require=['nose'],
       scripts=['bin/prophtools'],
+      package_data={'prophtools': ['config/prophtools_default.cfg']},
       include_package_data=True,
       zip_safe=False)
