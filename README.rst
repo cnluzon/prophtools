@@ -1,6 +1,6 @@
-=====================================================
-ProphTools v1.0. Heterogeneous Network Prioritization
-=====================================================
+====================================================================================
+ProphTools v1.0. General Prioritization Tools for Heterogeneous Biological Networks
+====================================================================================
 
 Authors: Carmen Navarro Luzón, Víctor Martínez Gómez
 
@@ -31,10 +31,16 @@ In addition, as the source code is provided, you are free to use ``ProphTools``
 as an API and pass your network configuration as a ``GraphDataSet`` object to a 
 ProphNet prioritizer. 
 
-For more specific information about the propagation algorithms, please read our 
+If you use ProphTools, please cite our publication:
+
+Navarro, Carmen, Martínez, Víctor, Cano, Carlos, and Blanco, Armando. 
+**ProphTools: General Prioritization Tools for Heterogeneous Biological Networks.**
+Bioinformatics (2016) - *Submitted*
+
+For more specific information about the propagation algorithms, please read our  
 `publication <http://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-15-S1-S5>`_:
 
-Martínez, Víctor, Carlos Cano, and Armando Blanco. 
+Martínez, Víctor, Cano, Carlos, and Blanco, Armando.
 **ProphNet: A generic prioritization method through propagation of information.**
 BMC bioinformatics 15.1 (2014): 1.
 
