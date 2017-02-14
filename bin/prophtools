@@ -174,7 +174,7 @@ if __name__ == "__main__":
 
     current_file_dir = os.path.dirname(__file__)
 
-    default_config_name = 'prophtools_default.cfg'
+    default_config_name = 'config/prophtools_default.cfg'
 
     log.debug(current_file_dir)
 
