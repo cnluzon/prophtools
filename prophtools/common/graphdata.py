@@ -54,7 +54,8 @@ class RelationNet:
         return sparse.issparse(self.matrix)
 
     def transpose(self):
-        new_mat = np.transpose(self.matrix)
+        # new_mat = np.transpose(self.matrix)
+        new_mat = self.matrix.transpose()
         return RelationNet(new_mat, self.name)
 
 
@@ -266,7 +267,7 @@ class GraphDataSet:
         if old_shape == new_shape:
             self.relations[rel_index].matrix = new_matrix
         elif old_shape[1] == new_shape[0] and old_shape[0] == new_shape[1]:
-            self.relations[rel_index].matrix = np.transpose(new_matrix)
+            self.relations[rel_index].matrix = new_matrix.transpose()
         else:
             msg = "Incompatible dims: {}, {}".format(new_shape, old_shape)
             raise ValueError(msg)
