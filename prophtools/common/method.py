@@ -260,7 +260,7 @@ class ProphNet:
                 str(matrix_right.shape))
             raise ValueError(msg)
         elif result == 1:
-            matrix_left = np.transpose(matrix_left)
+            matrix_left = matrix_left.transpose() # np.transpose(matrix_left)
 
         return matrix_left
 
