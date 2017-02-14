@@ -85,6 +85,7 @@ class PrioritizationTest:
                 pearson correlation si computed, although also spearman
                 correlation  is allowed.
         """
+
         if origin == destination:
             msg = ("Cannot run cross validation experiment on single matrix."
                    " Origin and destination must be different.")
@@ -125,7 +126,7 @@ class PrioritizationTest:
                                                     test_edge_list)
 
             if relation_direction == 0:
-                relation_copy_for_removal = np.transpose(relation_copy_for_removal)
+                relation_copy_for_removal = relation_copy_for_removal.transpose()
 
             self.prioritizer.graphdata.set_relation_matrix(
                 origin,
@@ -162,7 +163,7 @@ class PrioritizationTest:
 
             to_restore = tested_relation
             if relation_direction == 0:
-                to_restore = np.transpose(tested_relation)
+                to_restore = tested_relation.transpose()
 
             self.prioritizer.graphdata.set_relation_matrix(origin, destination, to_restore)
             fold_number += 1
