@@ -30,7 +30,7 @@ import logging
 import os
 import sys
 from pkg_resources import resource_filename
-
+import numpy as np
 from prophtools.utils import loggingtools, validation
 
 from prophtools.operations.run import LocalRunExperiment
@@ -176,7 +176,7 @@ if __name__ == "__main__":
 
     default_config_name = 'config/prophtools_default.cfg'
 
-    log.debug(current_file_dir)
+    log.debug(np.__version__)
 
     # default_config_path = os.path.join(current_file_dir, os.path.normpath('prophtools/config'))
     default_config_file = resource_filename('prophtools', default_config_name)
