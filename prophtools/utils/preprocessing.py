@@ -36,7 +36,7 @@ def precompute_matrix(m):
     """
 
     output = sparse.lil_matrix((m.shape))
-    query = np.zeros((m.shape[0], 1))
+    query = np.zeros((m.shape[0], 1))   # Divides time ten-fold
 
     for i in range(m.shape[0]):
         query[i] = 1

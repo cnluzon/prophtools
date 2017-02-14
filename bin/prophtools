@@ -177,7 +177,7 @@ if __name__ == "__main__":
 
     log.debug(current_file_dir)
 
-    default_config_path = os.path.join(current_file_dir, os.path.normpath('../prophtools/config'))
+    default_config_path = os.path.join(current_file_dir, os.path.normpath('prophtools/config'))
     default_config_file = os.path.join(os.path.normpath(default_config_path),
                                        default_config_name)
 
