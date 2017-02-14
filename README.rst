@@ -77,7 +77,22 @@ All requirements are included in the ``setup.py``. However, scipy documentation 
 
     sudo apt-get install python-numpy python-scipy python-matplotlib
     
+Docker version
+==============
+If you prefer to forget about requirements or are running another operating system, you can use prophtools public docker version to run it as a docker container. Prophtools docker container is available at the ``Docker hub``: <https://hub.docker.com/r/cnluzon/prophtools/>. You can pull it by: ::
+
+    docker pull cnluzon/prophtools
     
+For more information about how to install and use Docker, you can read the 
+`Docker documentation <https://docs.docker.com/>`_.
+
+Example runs on an installed docker image
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Once you have pulled the prophtools Docker image, you can run it using `docker run` command. Keep in mind that prophtools requires input files. In this sense, you need to mount a docker data volume to use it. This can be done using the `-v` option. For instance, if you are running prophtools on a directory which has a sampledata/ directory in it which contained an example.mat: ::
+
+    docker run -v `pwd`/sampledata:/sampledata cnluzon/prophtools cross --matfile /sampledata/example.mat --src 0 --dst 1 --out /sampledata/prueba
+
+Note that you need to provide the full path to the directory that is going to be mounted by the docker container. Additionally, note that the output files persist in the data volume. 
 
 How to use
 ==========
