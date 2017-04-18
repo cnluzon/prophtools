@@ -85,6 +85,7 @@ class EntityNet:
         self.precomputed = precomputed
 
         self._validate_dimensions()
+        # self.precompute_dot_values()
 
     @classmethod
     def from_raw_matrix(cls, matrix, net_name, node_names):
@@ -134,6 +135,25 @@ class EntityNet:
 
         if self.is_sparse():
             self.matrix = self.matrix.todense()
+
+    def precompute_dot_values(self):
+        self.dot_values = None
+        scor = self.precomputed
+        if scor is not None:
+            if sparse.issparse(scor):
+                scor = scor.todense()
+
+            for i in range(scor.shape[0]):
+                    temp = scor[i]
+                    self.dot_values += [dgemm(alpha=1.,
+                                        a=temp,   # scor[i],
+                                        b=temp,   # scor[i],
+                                        trans_a=True)[0][0]]
+        else:
+            msg = "Computation on the fly not implemented."
+            raise NotImplementedError(msg)
+
+
 
     def subset(self, node_list, precompute=True):
         """
@@ -200,7 +220,6 @@ class GraphDataSet:
         if densify:
             self.densify()
 
-        self.dot_values = self.precompute_dot_values()
 
     @staticmethod
     def _extract_nets_from_data_dictionary(data):
@@ -377,27 +396,27 @@ class GraphDataSet:
 
         return result
 
-    def precompute_dot_values(self):
-        dot_values = []
-        for idx, entity_mat in enumerate(self.networks):
-            dot_values.append([])
-            scor = entity_mat.precomputed
-            if scor is not None:    # if scor, when sparse, is ambiguous
-                if sparse.issparse(scor):
-                    scor = scor.todense()
+    # def precompute_dot_values(self):
+    #     dot_values = []
+    #     for idx, entity_mat in enumerate(self.networks):
+    #         dot_values.append([])
+    #         scor = entity_mat.precomputed
+    #         if scor is not None:    # if scor, when sparse, is ambiguous
+    #             if sparse.issparse(scor):
+    #                 scor = scor.todense()
 
-                for i in range(scor.shape[0]):
-                    temp = scor[i]
-                    dot_values[idx] += [dgemm(alpha=1.,
-                                              a=temp,   # scor[i],
-                                              b=temp,   # scor[i],
-                                              trans_a=True)[0][0]]
+    #             for i in range(scor.shape[0]):
+    #                 temp = scor[i]
+    #                 dot_values[idx] += [dgemm(alpha=1.,
+    #                                           a=temp,   # scor[i],
+    #                                           b=temp,   # scor[i],
+    #                                           trans_a=True)[0][0]]
 
-            else:
-                msg = "Computation on the fly not implemented."
-                raise NotImplementedError(msg)
+    #         else:
+    #             msg = "Computation on the fly not implemented."
+    #             raise NotImplementedError(msg)
 
-        return dot_values
+    #     return dot_values
 
     def subsample_network(self, matrix, row_list, column_list):
         by_row_matrix = matrix[row_list, :]

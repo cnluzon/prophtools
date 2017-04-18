@@ -272,14 +272,6 @@ class TestEntityNetFunctions(unittest.TestCase):
         self.assertFalse(sparse.issparse(dataset.networks[1].matrix))
         self.assertFalse(sparse.issparse(dataset.relations[0].matrix))
 
-    def test_not_precomputed_raises_not_implemented_error(self):
-        ent_a = EntityNet(self.net_a, "net_a", self.node_names)
-        ent_b = EntityNet(self.net_b, "net_b", self.node_names_b)
-        rel = RelationNet.from_raw_matrix(self.rel_ab, "rel_ab")
-        connections = np.matrix([[-1, 0], [-1, -1]])
-
-        with self.assertRaises(NotImplementedError):
-            dataset = GraphDataSet([ent_a, ent_b], [rel], connections)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(TestEntityNetFunctions)

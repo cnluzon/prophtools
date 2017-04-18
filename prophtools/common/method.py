@@ -122,8 +122,17 @@ class ProphNet:
 
     def _validate_query(self, query, src_net, dst_net):
         self._validate_network_index(src_net)
-        self._validate_network_index(dst_net)
+        self._validate_target_network(dst_net)
         self._validate_query_bounds(query, src_net)
+
+    def _validate_target_network(self, dst_net):
+        self._validate_network_index(dst_net)
+        self._validate_precomputed_network(dst_net)
+
+    def _validate_precomputed_network(self, i):
+        if self.graphdata.networks[i].precomputed is None:
+            msg = "Target net not precomputed ({}). Computation on the fly not implemented".format(i)
+            raise NotImplementedError(msg)
 
     def _get_correlation_method(self, method_name):
         corr_method = None
