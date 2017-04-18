@@ -88,6 +88,7 @@ usage: prophtools <subcommand> options
     The prophtools subcommands include:
         prioritize   Perform prioritization on a set of networks.
         cross        Perform LOO-cross validation for a given network setup.
+        precompute   Precompute a certain matrix in a .mat file.
     """
     return help_
 

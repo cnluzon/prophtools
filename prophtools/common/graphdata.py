@@ -383,11 +383,11 @@ class GraphDataSet:
             dot_values.append([])
             scor = entity_mat.precomputed
             if scor is not None:    # if scor, when sparse, is ambiguous
+                if sparse.issparse(scor):
+                    scor = scor.todense()
+
                 for i in range(scor.shape[0]):
                     temp = scor[i]
-                    if sparse.issparse(scor):
-                        temp = temp.todense()
-
                     dot_values[idx] += [dgemm(alpha=1.,
                                               a=temp,   # scor[i],
                                               b=temp,   # scor[i],
