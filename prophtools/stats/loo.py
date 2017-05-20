@@ -97,7 +97,7 @@ Optional parameters:
 
             prioritizer = method.ProphNet(network_data)
 
-            prioritizer_test = metrics.PrioritizationTest(prioritizer)
+            prioritizer_test = metrics.PrioritizationTest(prioritizer, self.log)
             prioritizer_test.run_cross_validation(
                 src, dst, fold=cfg_params.get('cross', 5),
                 out=cfg_params['out'],

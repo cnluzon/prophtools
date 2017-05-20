@@ -352,12 +352,16 @@ class ProphNet:
         horizontal_vectors = np.ravel(vectors)
         corr_results = np.zeros(network.shape[0], dtype='f,f')
         corr_scores = np.zeros(network.shape[0])
-
+        
         if sum(horizontal_vectors) > 0:
+            dst_precomputed_net = self.graphdata.networks[dst_net_index].precomputed
+            if sparse.issparse(dst_precomputed_net):
+                dst_precomputed_net = dst_precomputed_net.todense()
+
             for i in range(network.shape[0]):
-                current_row = self.graphdata.networks[dst_net_index].precomputed[i]
-                if sparse.issparse(current_row):
-                    current_row = np.ravel(current_row.todense())
+                current_row = dst_precomputed_net[i]
+                #if sparse.issparse(current_row):
+                current_row = np.ravel(current_row)
 
                 final_net = np.tile(current_row, n_paths)
                 score_tuple = corr_function(horizontal_vectors, final_net)

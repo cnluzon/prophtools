@@ -31,15 +31,16 @@ import random
 import scipy.sparse as sparse
 from scipy import interp
 import numpy as np
-
+import traceback
 from sklearn.model_selection import KFold
 import sklearn.metrics as skmetrics
-
+import logging
 
 class PrioritizationTest:
-    def __init__(self, prioritizer):
+    def __init__(self, prioritizer, log=None):
+        self.log = log or logging.getLogger()
         self.prioritizer = prioritizer
-        random.seed(3)
+        random.seed()
 
     def compute_rank(self, scores, index):
         index_score = scores[index]
@@ -67,6 +68,13 @@ class PrioritizationTest:
     def restore_test_edges(self, matrix, test_edges, values):
         for i, edge in enumerate(test_edges):
             matrix[edge[0], edge[1]] = values[i]
+
+    def log_edge_list(self, edge_list, origin, destination):
+        for e in edge_list:
+            origin_name = self.prioritizer.graphdata.networks[origin].node_names[e[0]]
+            destination_name = self.prioritizer.graphdata.networks[destination].node_names[e[1]]
+            msg = "{} -> {}".format(origin_name, destination_name)
+            self.log.info(msg)
 
     def run_cross_validation(self, origin, destination, fold=10, out='test.out',
                              corr_function="pearson", extreme=False):
@@ -118,6 +126,7 @@ class PrioritizationTest:
 
         for train, test in kf.split(indexes):
             test_edge_list = [(nonzero_rows[i], nonzero_cols[i]) for i in test]
+
             relation_copy_for_removal = sparse.lil_matrix(tested_relation)
             if extreme:
                 self.remove_all_edges(relation_copy_for_removal, test_edge_list)
@@ -134,16 +143,34 @@ class PrioritizationTest:
                 relation_copy_for_removal)
 
             for t in test:
-                tagged_scores = self.prioritizer.propagate([nonzero_rows[t]],
-                                                    origin,
-                                                    destination,
-                                                    corr_function=corr_function)
+                tagged_scores = []
+                try:
+                    tagged_scores = self.prioritizer.propagate([nonzero_rows[t]],
+                                                               origin,
+                                                               destination,
+                                                               corr_function=corr_function)
+
+                except Exception as e:
+                    item_n = nonzero_rows[t]
+                    msg = "Error prioritizing test {}.".format(t)
+                    self.log.error(msg)
+                    msg = "From item {} in {} network to {} network".format(item_n, origin, destination)
+                    item_name = self.prioritizer.graphdata.networks[origin].node_names[item_n]
+                    msg = "Item ID: {}".format(item_name)
+                    self.log.error(msg)
+                    # self.log.error(traceback.format_exc())
+                    continue
 
                 scores = [s[0] for s in tagged_scores]
 
-                if scores is not None:
+                if scores:
                     test_rank = self.compute_rank(scores, nonzero_cols[t])
 
+                    origin_id = self.prioritizer.graphdata.networks[origin].node_names[nonzero_rows[t]]
+                    destination_id = self.prioritizer.graphdata.networks[destination].node_names[nonzero_cols[t]]
+
+                    #self.log.debug("{}->{};{}".format(origin_id, destination_id, test_rank))
+                    print "{};{};{}".format(test_rank, origin_id, destination_id)
                     ranks.append(test_rank)
                     scores_per_test.append(scores[nonzero_cols[t]])
 
