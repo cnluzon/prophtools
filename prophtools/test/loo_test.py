@@ -22,7 +22,7 @@ class TestLOOExperimentFunctions(unittest.TestCase):
 [cross]
 data_path = .
 extreme = False
-cross =
+fold =
 corr_function = pearson
 matfile =
 src =

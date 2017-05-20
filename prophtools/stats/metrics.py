@@ -76,6 +76,75 @@ class PrioritizationTest:
             msg = "{} -> {}".format(origin_name, destination_name)
             self.log.info(msg)
 
+
+    def fit_scores(self, edge_list, prioritizer, origin, destination, corr_function):
+        """ Run propagation in prioritizer for each edge in edge_list and return
+        tpr, fpr, auc for the test group"""
+        n_tests = 0
+
+        fold_auc = []
+        mean_tpr = 0.0
+        mean_fpr = np.linspace(0, 1, 100)
+
+        ranks = []
+        scores_per_test = []
+
+        test_number = 0
+
+        for e in edge_list:
+            tagged_scores = []
+            try:
+                tagged_scores = self.prioritizer.propagate([e[0]],
+                                                           origin,
+                                                           destination,
+                                                           corr_function=corr_function)
+
+            except Exception:
+                item_n = e[0]
+                msg = "Error prioritizing test {}.".format(n_tests)
+                self.log.error(msg)
+                msg = "From item {} in {} network to {} network".format(item_n, origin, destination)
+                item_name = self.prioritizer.graphdata.networks[origin].node_names[item_n]
+                msg = "Item ID: {}".format(item_name)
+                self.log.error(msg)
+
+                continue
+
+            scores = [s[0] for s in tagged_scores]
+
+            if scores:
+                test_rank = self.compute_rank(scores, e[1])
+
+                # origin_id = self.prioritizer.graphdata.networks[origin].node_names[nonzero_rows[t]]
+                # destination_id = self.prioritizer.graphdata.networks[destination].node_names[nonzero_cols[t]]
+
+                # print "{};{};{}".format(test_rank, origin_id, destination_id)
+                ranks.append(test_rank)
+                scores_per_test.append(scores[e[1]])
+
+                # 1s are the class that are supposed to rank high in our classifier
+                labels = np.zeros(len(scores), dtype=np.int)
+                labels[e[1]] = 1
+                fpr, tpr, thresholds = skmetrics.roc_curve(labels,
+                                                           scores,
+                                                           pos_label=1)
+
+                mean_tpr += interp(mean_fpr, fpr, tpr)
+                mean_tpr[0] = 0.0
+                roc_auc = skmetrics.auc(fpr, tpr)
+                fold_auc.append(roc_auc)
+
+                test_number += 1
+            else:
+                print "Warning, test resulting in empty scores."
+
+        mean_tpr = mean_tpr / float(test_number)
+        mean_tpr[-1] = 1.0
+        mean_auc = skmetrics.auc(mean_fpr, mean_tpr)
+
+        return mean_tpr, mean_fpr, mean_auc, np.mean(ranks)
+
+
     def run_cross_validation(self, origin, destination, fold=10, out='test.out',
                              corr_function="pearson", extreme=False):
         """
@@ -114,15 +183,13 @@ class PrioritizationTest:
         if fold is None:
             fold = len(indexes)
 
-        kf = KFold(n_splits=fold)
+        # kf = KFold(n_splits=fold, shuffle=True, random_state=1) # Uncomment this line for reproducibility
+        kf = KFold(n_splits=fold, shuffle=True)
 
-        fold_auc = []
         mean_tpr = 0.0
         mean_fpr = np.linspace(0, 1, 100)
-        ranks = []
-        scores_per_test = []
         fold_number = 0
-        test_number = 0
+        test_results = []
 
         for train, test in kf.split(indexes):
             test_edge_list = [(nonzero_rows[i], nonzero_cols[i]) for i in test]
@@ -142,51 +209,9 @@ class PrioritizationTest:
                 destination,
                 relation_copy_for_removal)
 
-            for t in test:
-                tagged_scores = []
-                try:
-                    tagged_scores = self.prioritizer.propagate([nonzero_rows[t]],
-                                                               origin,
-                                                               destination,
-                                                               corr_function=corr_function)
+            my_result = self.fit_scores(test_edge_list, self.prioritizer, origin, destination, corr_function)
 
-                except Exception as e:
-                    item_n = nonzero_rows[t]
-                    msg = "Error prioritizing test {}.".format(t)
-                    self.log.error(msg)
-                    msg = "From item {} in {} network to {} network".format(item_n, origin, destination)
-                    item_name = self.prioritizer.graphdata.networks[origin].node_names[item_n]
-                    msg = "Item ID: {}".format(item_name)
-                    self.log.error(msg)
-                    # self.log.error(traceback.format_exc())
-                    continue
-
-                scores = [s[0] for s in tagged_scores]
-
-                if scores:
-                    test_rank = self.compute_rank(scores, nonzero_cols[t])
-
-                    origin_id = self.prioritizer.graphdata.networks[origin].node_names[nonzero_rows[t]]
-                    destination_id = self.prioritizer.graphdata.networks[destination].node_names[nonzero_cols[t]]
-
-                    #self.log.debug("{}->{};{}".format(origin_id, destination_id, test_rank))
-                    print "{};{};{}".format(test_rank, origin_id, destination_id)
-                    ranks.append(test_rank)
-                    scores_per_test.append(scores[nonzero_cols[t]])
-
-                    labels = np.zeros(len(scores), dtype=np.int)
-                    labels[nonzero_cols[t]] = 1
-                    fpr, tpr, thresholds = skmetrics.roc_curve(labels,
-                                                               scores,
-                                                               pos_label=1)
-
-                    mean_tpr += interp(mean_fpr, fpr, tpr)
-                    roc_auc = skmetrics.auc(fpr, tpr)
-                    fold_auc.append(roc_auc)
-
-                    test_number += 1
-                else:
-                    print "Warning, test resulting in empty scores."
+            test_results.append(my_result)
 
             to_restore = tested_relation
             if relation_direction == 0:
@@ -195,15 +220,19 @@ class PrioritizationTest:
             self.prioritizer.graphdata.set_relation_matrix(origin, destination, to_restore)
             fold_number += 1
 
-        # ranks normalize on size of the matrix,  whereas tpr/fpr on number of 
-        # tests performed (i.e. edges connecting origin and destination)
-        mean_tpr = mean_tpr/float(test_number)
+        mean_tpr = 0.0
+        for r in test_results:
+            mean_tpr += r[0]
+
+        mean_tpr /= float(len(test_results))
         mean_tpr[-1] = 1.0
         mean_auc = skmetrics.auc(mean_fpr, mean_tpr)
-        std_auc = np.std(fold_auc)
+        std_auc = np.std([r[2] for r in test_results])
 
-        mean_ranks = np.mean(ranks)
-        std_ranks = np.std(ranks)
+        mean_ranks = np.mean([r[3] for r in test_results])
+        std_ranks = np.std([r[3] for r in test_results])
+        # mean_ranks = np.mean(ranks)
+        # std_ranks = np.std(ranks)
         mean_ranks_norm = mean_ranks/float(n_results)
         std_ranks_norm = std_ranks/float(n_results)
 

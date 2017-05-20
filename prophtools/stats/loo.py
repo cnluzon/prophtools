@@ -52,9 +52,9 @@ Optional parameters:
         result['src'] = int(self.config.get(section, 'src'))
         result['dst'] = int(self.config.get(section, 'dst'))
         result['matfile'] = self.config.get(section, 'matfile')
-        cross = self.config.get(section, 'cross')
+        cross = self.config.get(section, 'fold')
         if cross != '':
-            result['cross'] = int(cross)
+            result['fold'] = int(cross)
         result['out'] = self.config.get(section, 'out')
         result['corr_function'] = self.config.get(section, 'corr_function')
         return result
@@ -73,9 +73,9 @@ Optional parameters:
             cfg_params = self._load_parameters(self.params_section)
 
             self.log.info("Loading data...")
-            if cfg_params.get('cross', None) is not None:
-                ok = validation.verify_numeric_value(cfg_params['cross'],
-                                                     'cross', 2, 20, self.log)
+            if cfg_params.get('fold', None) is not None:
+                ok = validation.verify_numeric_value(cfg_params['fold'],
+                                                     'fold', 2, 20, self.log)
                 if not ok:
                     self._print_help()
                     return -1
@@ -99,7 +99,7 @@ Optional parameters:
 
             prioritizer_test = metrics.PrioritizationTest(prioritizer, self.log)
             prioritizer_test.run_cross_validation(
-                src, dst, fold=cfg_params.get('cross', 5),
+                src, dst, fold=cfg_params.get('fold', 5),
                 out=cfg_params['out'],
                 corr_function=cfg_params['corr_function'])
 
