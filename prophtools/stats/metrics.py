@@ -44,7 +44,7 @@ class PrioritizationTest:
 
     def compute_rank(self, scores, index):
         index_score = scores[index]
-        sorted_scores = sorted(scores, reverse=True)
+        sorted_scores = sorted(scores, key=lambda x: x[0], reverse=True)
         return sorted_scores.index(index_score)
 
     def remove_test_edges(self, matrix, test_edges):
@@ -113,12 +113,12 @@ class PrioritizationTest:
             scores = [s[0] for s in tagged_scores]
 
             if scores:
-                test_rank = self.compute_rank(scores, e[1])
+                test_rank = self.compute_rank(tagged_scores, e[1])
 
-                # origin_id = self.prioritizer.graphdata.networks[origin].node_names[nonzero_rows[t]]
-                # destination_id = self.prioritizer.graphdata.networks[destination].node_names[nonzero_cols[t]]
+                origin_id = self.prioritizer.graphdata.networks[origin].node_names[e[0]]
+                destination_id = self.prioritizer.graphdata.networks[destination].node_names[e[1]]
 
-                # print "{};{};{}".format(test_rank, origin_id, destination_id)
+                print "{};{};{}".format(test_rank, origin_id, destination_id)
                 ranks.append(test_rank)
                 scores_per_test.append(scores[e[1]])
 
@@ -144,6 +144,16 @@ class PrioritizationTest:
 
         return mean_tpr, mean_fpr, mean_auc, np.mean(ranks)
 
+    def create_relation_copy_for_removal(self, tested_relation, test_edge_list, extreme=False):
+
+        relation_copy_for_removal = sparse.lil_matrix(tested_relation)
+        if extreme:
+            self.remove_all_edges(relation_copy_for_removal, test_edge_list)
+        else:
+            old_values = self.remove_test_edges(relation_copy_for_removal,
+                                                test_edge_list)
+
+        return relation_copy_for_removal
 
     def run_cross_validation(self, origin, destination, fold=10, out='test.out',
                              corr_function="pearson", extreme=False):
@@ -194,13 +204,12 @@ class PrioritizationTest:
         for train, test in kf.split(indexes):
             test_edge_list = [(nonzero_rows[i], nonzero_cols[i]) for i in test]
 
-            relation_copy_for_removal = sparse.lil_matrix(tested_relation)
-            if extreme:
-                self.remove_all_edges(relation_copy_for_removal, test_edge_list)
-            else:
-                old_values = self.remove_test_edges(relation_copy_for_removal,
-                                                    test_edge_list)
+            relation_copy_for_removal = self.create_relation_copy_for_removal(
+                tested_relation,
+                test_edge_list,
+                extreme=extreme)
 
+            # For efficiency, transpose before setting
             if relation_direction == 0:
                 relation_copy_for_removal = relation_copy_for_removal.transpose()
 
@@ -209,7 +218,11 @@ class PrioritizationTest:
                 destination,
                 relation_copy_for_removal)
 
-            my_result = self.fit_scores(test_edge_list, self.prioritizer, origin, destination, corr_function)
+            my_result = self.fit_scores(test_edge_list,
+                                        self.prioritizer,
+                                        origin,
+                                        destination,
+                                        corr_function)
 
             test_results.append(my_result)
 
@@ -217,8 +230,11 @@ class PrioritizationTest:
             if relation_direction == 0:
                 to_restore = tested_relation.transpose()
 
-            self.prioritizer.graphdata.set_relation_matrix(origin, destination, to_restore)
+            self.prioritizer.graphdata.set_relation_matrix(origin,
+                                                           destination,
+                                                           to_restore)
             fold_number += 1
+
 
         mean_tpr = 0.0
         for r in test_results:
