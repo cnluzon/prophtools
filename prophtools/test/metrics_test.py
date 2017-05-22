@@ -35,8 +35,8 @@ class TestPrioritizationTestFunctions(unittest.TestCase):
 
     def test_compute_rank_normal_case(self):
         scores = [0.3, 0.6, 0.1, 0.0, 0.3]
-        tags = ['a','b','c','d','e']
-        tagged_scores = zip(scores,tags)
+        tags = ['a', 'b', 'c', 'd', 'e']
+        tagged_scores = zip(scores, tags)
         expected_rank = 0
 
         result_rank = self.prio_test.compute_rank(tagged_scores, 1)
@@ -44,7 +44,7 @@ class TestPrioritizationTestFunctions(unittest.TestCase):
 
     def test_compute_rank_edge_case(self):
         scores = [0.3, 0.6, 0.1, 0.0, 0.3]
-        tags = ['a','b','c','d','e']
+        tags = ['a', 'b', 'c', 'd', 'e']
         tagged_scores = zip(scores, tags)
         expected_rank = 4
 

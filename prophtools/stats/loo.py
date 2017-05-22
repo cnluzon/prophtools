@@ -33,6 +33,8 @@ Required parameters:
     src    : Source network (as an index)
     dst    : Destination network (as an index)
     cross  : Number of groups ([2,20])
+    extreme: Perform extreme LOO (remove not only test edge, but all edges
+             connecting involved nodes.)
     out    : Name of the output files prefix (no extension). Three files will
              be generated: a .svg containing a ROC curve, a .txt containing the
              fpr/tpr values used to generate the plot and a .txt containing
@@ -57,6 +59,7 @@ Optional parameters:
             result['fold'] = int(cross)
         result['out'] = self.config.get(section, 'out')
         result['corr_function'] = self.config.get(section, 'corr_function')
+        result['extreme'] = self.config.get(section, 'extreme').lower() in ['true', 'yes', '1']
         return result
 
     def experiment(self, extra_params):
@@ -92,6 +95,7 @@ Optional parameters:
 
             src = cfg_params['src']
             dst = cfg_params['dst']
+            extreme = cfg_params['extreme']
 
             self.log.info("Performing LOO-CV test: {}->{}.".format(src, dst))
 
@@ -101,7 +105,8 @@ Optional parameters:
             prioritizer_test.run_cross_validation(
                 src, dst, fold=cfg_params.get('fold', 5),
                 out=cfg_params['out'],
-                corr_function=cfg_params['corr_function'])
+                corr_function=cfg_params['corr_function'],
+                extreme=extreme)
 
             self.log.info("Cross validation run successfully.")
             return 0

@@ -80,7 +80,8 @@ out = stats
                                                      1,
                                                      fold=5,
                                                      corr_function='pearson',
-                                                     out='stats')
+                                                     out='stats',
+                                                     extreme=False)
         
         self.assertEqual(result, 0)
 

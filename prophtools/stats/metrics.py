@@ -65,6 +65,8 @@ class PrioritizationTest:
             matrix[edge[0], :] = 0
             matrix[:, edge[1]] = 0
 
+        return matrix
+
     def restore_test_edges(self, matrix, test_edges, values):
         for i, edge in enumerate(test_edges):
             matrix[edge[0], edge[1]] = values[i]
@@ -118,7 +120,7 @@ class PrioritizationTest:
                 origin_id = self.prioritizer.graphdata.networks[origin].node_names[e[0]]
                 destination_id = self.prioritizer.graphdata.networks[destination].node_names[e[1]]
 
-                print "{};{};{}".format(test_rank, origin_id, destination_id)
+                # print "{};{};{}".format(test_rank, origin_id, destination_id)
                 ranks.append(test_rank)
                 scores_per_test.append(scores[e[1]])
 
@@ -148,10 +150,13 @@ class PrioritizationTest:
 
         relation_copy_for_removal = sparse.lil_matrix(tested_relation)
         if extreme:
+            print len(set([e[0] for e in test_edge_list])), " should be less than ", tested_relation.shape
             self.remove_all_edges(relation_copy_for_removal, test_edge_list)
+            print "This number should be lower:", relation_copy_for_removal.count_nonzero()
         else:
             old_values = self.remove_test_edges(relation_copy_for_removal,
                                                 test_edge_list)
+
 
         return relation_copy_for_removal
 
@@ -234,7 +239,6 @@ class PrioritizationTest:
                                                            destination,
                                                            to_restore)
             fold_number += 1
-
 
         mean_tpr = 0.0
         for r in test_results:
