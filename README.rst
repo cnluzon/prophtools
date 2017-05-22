@@ -31,12 +31,6 @@ In addition, as the source code is provided, you are free to use ``ProphTools``
 as an API and pass your network configuration as a ``GraphDataSet`` object to a 
 ProphNet prioritizer. 
 
-If you use ProphTools, please cite our publication:
-
-Navarro, Carmen, Martínez, Víctor, Cano, Carlos, and Blanco, Armando. 
-**ProphTools: General Prioritization Tools for Heterogeneous Biological Networks.**
-Bioinformatics (2016) - *Submitted*
-
 For more specific information about the propagation algorithms, please read our  
 `publication <http://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-15-S1-S5>`_:
 
