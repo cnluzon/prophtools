@@ -83,8 +83,8 @@ Optional parameters:
                     self._print_help()
                     return -1
 
-            full_matfile_path = os.path.join(cfg_params['data_path'],
-                                             cfg_params['matfile'])
+            full_matfile_path = os.path.abspath(os.path.join(cfg_params['data_path'],
+                                             cfg_params['matfile']))
 
             if not validation.check_file_exists(full_matfile_path, self.log):
                 print "Exiting"
