@@ -47,7 +47,8 @@ Required parameters:
              ProphTools documentation for more info on this format.)
     src    : Source network (as an index)
     dst    : Destination network (as an index)
-    query  : Comma-separated list of indexes that are on the query target.
+    qindex : Comma-separated list of indexes that are on the query target.
+    qname  : Comma-separated list of IDs of the nodes in the query target.
 
 Optional parameters:
     corr_function: Correlation function used to compute the score at end
@@ -91,7 +92,8 @@ Optional parameters:
         params['dst'] = int(self.config.get(section, 'dst'))
         params['matfile'] = self.config.get(section, 'matfile')
         params['corr_function'] = self.config.get(section, 'corr_function')
-        params['query'] = self.config.get(section, 'query')
+        params['qindex'] = self.config.get(section, 'qindex')
+        params['qname'] = self.config.get(section, 'qname')
         return params
 
     def experiment(self, extra_params):
@@ -101,7 +103,7 @@ Optional parameters:
         """
         self.log.info("Running Prioritization.")
         self.log.info("Parsing parameters from config file.")
-        required = ['matfile', 'src', 'dst', 'query']
+        required = ['matfile', 'src', 'dst']
         if self._are_required_parameters_valid(self.config, required):
             cfg_params = self._load_parameters("run")
 
@@ -120,12 +122,32 @@ Optional parameters:
                 self.log.error(msg)
                 return -1
             
-            query_vector = cfg_params['query'].split(',')
-            query_vector = [int(q) for q in query_vector]
+            prioritizer = method.ProphNet(propagation_data)
+
+            query_index_vector = []
+            if cfg_params['qindex']:
+                query_index_vector = cfg_params['qindex'].split(',')
+            elif cfg_params['qname']:
+                query_name_vector = cfg_params['qname'].split(',')
+                for q in query_name_vector:
+                    names = list(prioritizer.graphdata.networks[cfg_params['src']].node_names)
+                    names = [i.lower().strip() for i in names]
+                    # print names
+                    try:
+                        ind = names.index(q)
+                        query_index_vector.append(ind)
+                    except ValueError:
+                        self.log.warning("Query ID {} not found in src network.".format(q))
+
+                if query_index_vector == []:
+                    self.log.error("Empty query. Exiting.")
+                    exit(-1)
+
+            query_vector = [int(q) for q in query_index_vector]
 
             self.log.info("Prioritizing.")
 
-            prioritizer = method.ProphNet(propagation_data)
+            
 
             self._run_prioritizer(prioritizer, query_vector,
                                   cfg_params['src'],

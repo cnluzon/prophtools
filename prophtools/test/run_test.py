@@ -24,6 +24,8 @@ class TestLocalRunExperimentFunctions(unittest.TestCase):
 data_path = .
 corr_function = pearson
 matfile =
+qindex =
+qname = 
 """
         self.tempdir = tempfile.mkdtemp()
         self.configname = 'config.cfg'
