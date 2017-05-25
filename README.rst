@@ -34,6 +34,7 @@ ProphNet prioritizer.
 For more specific information about the propagation algorithms, please read our  
 `publication <http://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-15-S1-S5>`_:
 
+
 Martínez, Víctor, Cano, Carlos, and Blanco, Armando.
 **ProphNet: A generic prioritization method through propagation of information.**
 BMC bioinformatics 15.1 (2014): 1.
@@ -184,7 +185,7 @@ precomputed matrices **must** be provided at this moment. To precompute them you
 of the ``preprocessing`` module provided.
 
 There is a sample example.mat matrix file that you can download under ``matfiles/example.mat`` to familiarize yourself
-with the format. 
+with the format.
 
 On python command line: ::
 
@@ -238,4 +239,8 @@ Using the defaults: ::
 
     prophtools cross --matfile example.mat --src 0 --dst 2
     
+LncRNA-disease network
+^^^^^^^^^^^^^^^^^^^^^^
+
+Additionally, you can download real lncRNA-disease data from our server: `general dataset <http://genome.ugr.es:9000/download/data/lncrna_disease_prophtools_general.mat>`_, `specific dataset <http://genome.ugr.es:9000/download/data/lncrna_disease_prophtools_specific.mat>`_.
 
