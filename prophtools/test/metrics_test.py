@@ -8,6 +8,7 @@ import prophtools.utils.loggingtools as loggingtools
 import sys
 import StringIO
 import mock
+import numpy as np
 from prophtools.common.graphdata import GraphDataSet
 from prophtools.stats.metrics import PrioritizationTest
 from prophtools.common.method import ProphNet
@@ -51,7 +52,51 @@ class TestPrioritizationTestFunctions(unittest.TestCase):
         result_rank = self.prio_test.compute_rank(tagged_scores, 3)
         self.assertEqual(result_rank, expected_rank)
 
+    def test_remove_edges_modifies_adjacency_matrix(self):
+        matrix = np.matrix([[1,0,0,1],[0,0,1,0],[0,0,0,0]])
+        edges = [[0,0]]
+        expected = np.matrix([[0,0,0,1],[0,0,1,0],[0,0,0,0]])
+        self.prio_test.remove_test_edges(matrix, edges)
+        self.assertEqual(matrix[0,0], expected[0,0])
+        self.assertEqual(matrix[0,3], expected[0,3])
 
+    def test_remove_all_edges_modifies_column_and_row(self):
+        matrix = np.matrix([[1,0,0,1],[0,0,1,0],[0,0,0,0]])
+        edges = [[0,0]]
+        expected = np.matrix([[0,0,0,0],[0,0,1,0],[0,0,0,0]])
+        self.prio_test.remove_all_edges(matrix, edges)
+        self.assertEqual(matrix[0,0], expected[0,0])
+        self.assertEqual(matrix[0,3], expected[0,3])
+
+    def test_restore_test_edges_reverts_removal(self):
+        matrix = np.matrix([[1,0,0,1],[0,0,1,0],[0,0,0,0]])
+        edges = [[0,0]]
+        values  = [matrix[0,0]]
+        expected = np.matrix([[1,0,0,1],[0,0,1,0],[0,0,0,0]])
+        self.prio_test.remove_test_edges(matrix, edges)
+        self.prio_test.restore_test_edges(matrix, edges, values)
+        self.assertEqual(matrix[0,0], expected[0,0])
+        self.assertEqual(matrix[0,3], expected[0,3])
+
+    def test_create_relation_copy_for_removal(self):
+        matrix = np.matrix([[1,0,0,1],[0,0,1,0],[0,0,0,0]])
+        edges = [[0,0]]
+        values  = [matrix[0,0]]
+        new_mat = self.prio_test.create_relation_copy_for_removal(matrix, edges, extreme=False)
+        expected = np.matrix([[0,0,0,1],[0,0,1,0],[0,0,0,0]])
+        
+        self.assertEqual(new_mat[0,0], expected[0,0])
+        self.assertEqual(new_mat[0,3], expected[0,3])
+  
+    def test_create_relation_copy_for_removal_extreme(self):
+        matrix = np.matrix([[1,0,0,1],[0,0,1,0],[0,0,0,0]])
+        edges = [[0,0]]
+        values  = [matrix[0,0]]
+        new_mat = self.prio_test.create_relation_copy_for_removal(matrix, edges, extreme=True)
+        expected = np.matrix([[0,0,0,0],[0,0,1,0],[0,0,0,0]])
+        
+        self.assertEqual(new_mat[0,0], expected[0,0])
+        self.assertEqual(new_mat[0,3], expected[0,3])
 
 
 if __name__ == '__main__':
