@@ -60,6 +60,12 @@ class TestValidationFunctions(unittest.TestCase):
     def test_verify_numerical_value_over_not_valid_returns_false(self):
         self.assertFalse(validation.verify_numeric_value_over_value(10, 'v', 15, self.log))
 
+    def test_verify_numeric_value_valid_returns_true(self):
+        self.assertTrue(validation.verify_numeric_value(10, 'test', 5, 15, self.log))
+
+    def test_verify_numeric_value_invalid_returns_false(self):
+        self.assertFalse(validation.verify_numeric_value(10, 'test', 16, 15, self.log))
+
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(
         TestValidationFunctions)

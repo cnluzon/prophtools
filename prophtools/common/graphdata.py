@@ -45,10 +45,13 @@ class RelationNet:
         if self.is_sparse():
             self.matrix = self.matrix.todense()
 
-    def subset(self, row_list, column_list, precompute=True):
+    def subset(self, row_list, column_list, normalize=False, precompute=True):
         new_matrix = self.matrix[row_list, :][:, column_list]
-        new_matrix_norm = preprocessing.normalize_matrix(new_matrix)
-        return RelationNet(new_matrix_norm, self.name)
+        if normalize:
+            new_matrix_norm = preprocessing.normalize_matrix(new_matrix)
+            new_matrix = new_matrix_norm
+
+        return RelationNet(new_matrix, self.name)
 
     def is_sparse(self):
         return sparse.issparse(self.matrix)

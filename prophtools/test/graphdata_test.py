@@ -132,6 +132,16 @@ class TestEntityNetFunctions(unittest.TestCase):
         self.assertEqual(subset.matrix[1, 0], 0.00)
         self.assertEqual(subset.matrix[1, 1], 0.00)
 
+    def test_subset_relation(self):
+        r = RelationNet(self.rel_ab, "Relation")
+        subset = r.subset([1, 2], [0, 1], precompute=False)
+
+        self.assertEqual(subset.matrix[0, 0], 0.50)
+        self.assertEqual(subset.matrix[0, 1], 0.00)
+
+        self.assertEqual(subset.matrix.shape, (2, 2))
+
+
     @mock.patch('prophtools.utils.preprocessing.precompute_matrix')
     @mock.patch('prophtools.common.graphdata.EntityNet')
     def test_subset_nodes_precompute_calls_precompute(self, mock_entity_init, mock_precompute_matrix):
