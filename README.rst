@@ -244,3 +244,18 @@ LncRNA-disease network
 
 Additionally, you can download real lncRNA-disease data from our server: `general dataset <http://genome.ugr.es:9000/download/data/lncrna_disease_prophtools_general.mat>`_, `specific dataset <http://genome.ugr.es:9000/download/data/lncrna_disease_prophtools_specific.mat>`_.
 
+Drug-gene-disease network
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can also download 
+data from our server: `DrugNet file (large, includes precomputed matrices) <http://genome.ugr.es:9000/download/data/drugnet_data.zip>`_. `DrugNet file (lighter, but needs precomputation before use) <http://genome.ugr.es:9000/download/data/drugnet_data_non_precomputed.zip>`_. For more information, you can visit `DrugNet's website <http://genome.ugr.es:9000/drugnet>`_.
+
+If you use these datasets, please cite us:
+
+Martínez, V., Navarro, C., Cano, C., Fajardo, W., Blanco, A. 
+**DrugNet: Network-based drug–disease prioritization by integrating heterogeneous data.** 
+Artificial intelligence in medicine, 63(1), 41-49. (2015).
+
+
+
+
