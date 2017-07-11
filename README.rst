@@ -107,7 +107,7 @@ node indexes that are going to be propagated).
 
 For instance: ::
 
-    prophtools prioritize --matfile network.mat --src 0 --dst 2 --query 1,2
+    prophtools prioritize --matfile network.mat --src 0 --dst 2 --qindex 1,2
 
 will return a scored list of nodes from the destination network and their
 correlation scores: ::
@@ -125,7 +125,7 @@ correlation (or spearman if specified.)
 Optionally, a --corr_function parameter can be provided to specify spearman
 correlation: ::
 
-    prophtools prioritize --matfile network.mat --src 0 --dst 2 --query 1,2 --corr_function spearman
+    prophtools prioritize --matfile network.mat --src 0 --dst 2 --qindex 1,2 --corr_function spearman
 
 **Network configuration file format**
 
