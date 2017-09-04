@@ -10,21 +10,27 @@ import tempfile
 import unittest
 
 from prophtools.utils import graphio
+from prophtools.common.graphdata import GraphDataSet
 
 class TestGraphIOFunctions(unittest.TestCase):
     def setUp(self):
         self.test_dir = tempfile.mkdtemp()
         self.test_file = os.path.join(self.test_dir, 'temp.gexf')
         self.test_three_group_gexf_file = os.path.join(self.test_dir, 'temp2.gexf')
+        self.test_ten_group_gexf_file = os.path.join(self.test_dir, 'temp4.gexf')
+        self.test_three_group_two_relations_gexf_file = os.path.join(self.test_dir, 'temp3.gexf')
+        self.test_out_file = os.path.join(self.test_dir, 'temp_out.mat')
         self.test_no_attr_file = os.path.join(self.test_dir, 'no_attribute.gexf')
 
         self.test_missing_attr_file = os.path.join(self.test_dir, 'missing_attr.gexf')
         
         self._write_sample_gexf_file(self.test_file)
         self._write_sample_three_group_gexf_file(self.test_three_group_gexf_file)
+        self._write_sample_three_group_two_relations_gexf_file(self.test_three_group_two_relations_gexf_file)
+        self._write_sample_ten_group_gexf_file(self.test_ten_group_gexf_file)
+        
         self._write_gexf_file_no_attributes(self.test_no_attr_file)
         self._write_gexf_file_missing_attributes(self.test_missing_attr_file)
-
 
     def _write_gexf_file_missing_attributes(self, filename):
         value = """<?xml version="1.0" encoding="UTF-8"?>
@@ -233,6 +239,150 @@ class TestGraphIOFunctions(unittest.TestCase):
         fo.write(value)
         fo.close()
 
+    def _write_sample_three_group_two_relations_gexf_file(self, filename):
+        value =  """<?xml version="1.0" encoding="UTF-8"?>
+<gexf xmlns="http://www.gexf.net/1.2draft" version="1.2">
+<meta lastmodifieddate="2014-01-30">
+<creator>Gephi 0.8.1</creator>
+<description></description>
+</meta>
+<graph defaultedgetype="undirected" mode="static">
+    <attributes class="node">
+        <attribute id="0" title="group" type="integer"/>    
+    </attributes>
+    <nodes>
+        <node id="0" label="0_group_0">
+            <attvalue for="0" value="group0"/>
+        </node>
+        <node id="1" label="1_group_0">
+            <attvalue for="0" value="group0"/>
+        </node>
+        <node id="2" label="2_group_0">
+            <attvalue for="0" value="group0"/>
+        </node>
+        <node id="3" label="3_group_1">
+            <attvalue for="0" value="group1"/>
+        </node>     
+        <node id="4" label="4_group_1">
+            <attvalue for="0" value="group1"/>
+        </node>    
+        <node id="5" label="5_group_2">
+            <attvalue for="0" value="group2"/>
+        </node>    
+        <node id="6" label="6_group_2">
+            <attvalue for="0" value="group2"/>
+        </node>    
+        <node id="7" label="7_group_2">
+            <attvalue for="0" value="group2"/>
+        </node>    
+        <node id="8" label="8_group_2">
+            <attvalue for="0" value="group2"/>
+        </node>    
+              
+    </nodes>
+
+    <edges>
+        <!-- Edges within groups -->
+        <edge id="0" source="1" target="2" weight="0.25"/>
+        <edge id="1" source="0" target="2" weight="0.88"/>
+        
+        <edge id="2" source="3" target="4" weight="1.00"/>
+        
+        <edge id="3" source="5" target="7" weight="0.52"/>    
+        <edge id="4" source="7" target="8" weight="0.52"/>
+        <edge id="5" source="6" target="8" weight="0.52"/>
+        
+        <!-- Edges across groups -->
+        <edge id="6" source="0" target="3" weight="1.00"/>
+        <edge id="7" source="2" target="4" weight="1.00"/>
+
+        <edge id="9" source="4" target="6" weight="1.00"/>
+        <edge id="10" source="4" target="8" weight="1.00"/>
+
+    </edges>
+
+</graph>
+</gexf>
+    """
+        fo = open(filename, 'w')
+        fo.write(value)
+        fo.close()
+
+    def _write_sample_ten_group_gexf_file(self, filename):
+        value =  """<?xml version="1.0" encoding="UTF-8"?>
+<gexf xmlns="http://www.gexf.net/1.2draft" version="1.2">
+<meta lastmodifieddate="2014-01-30">
+<creator>Gephi 0.8.1</creator>
+<description></description>
+</meta>
+<graph defaultedgetype="undirected" mode="static">
+    <attributes class="node">
+        <attribute id="0" title="group" type="integer"/>    
+    </attributes>
+    <nodes>
+        <node id="0" label="0_group_0">
+            <attvalue for="0" value="group0"/>
+        </node>
+        <node id="1" label="1_group_0">
+            <attvalue for="0" value="group1"/>
+        </node>
+        <node id="2" label="2_group_0">
+            <attvalue for="0" value="group2"/>
+        </node>
+        <node id="3" label="3_group_1">
+            <attvalue for="0" value="group3"/>
+        </node>     
+        <node id="4" label="4_group_1">
+            <attvalue for="0" value="group4"/>
+        </node>    
+        <node id="5" label="5_group_2">
+            <attvalue for="0" value="group5"/>
+        </node>    
+        <node id="6" label="6_group_2">
+            <attvalue for="0" value="group6"/>
+        </node>    
+        <node id="7" label="7_group_2">
+            <attvalue for="0" value="group7"/>
+        </node>    
+        <node id="8" label="8_group_2">
+            <attvalue for="0" value="group8"/>
+        </node>    
+        <node id="9" label="9_group_2">
+            <attvalue for="0" value="group9"/>
+        </node>    
+        <node id="10" label="10_group_2">
+            <attvalue for="0" value="group10"/>
+        </node>    
+                                          
+    </nodes>
+
+    <edges>
+        <!-- Edges within groups -->
+        <edge id="0" source="1" target="2" weight="0.25"/>
+        <edge id="1" source="0" target="2" weight="0.88"/>
+        
+        <edge id="2" source="3" target="4" weight="1.00"/>
+        
+        <edge id="3" source="5" target="7" weight="0.52"/>    
+        <edge id="4" source="7" target="8" weight="0.52"/>
+        <edge id="5" source="6" target="8" weight="0.52"/>
+        
+        <!-- Edges across groups -->
+        <edge id="6" source="0" target="3" weight="1.00"/>
+        <edge id="7" source="2" target="4" weight="1.00"/>
+
+        <edge id="9" source="4" target="6" weight="1.00"/>
+        <edge id="10" source="4" target="8" weight="1.00"/>
+
+    </edges>
+
+</graph>
+</gexf>
+    """
+        fo = open(filename, 'w')
+        fo.write(value)
+        fo.close()
+
     def tearDown(self):
         shutil.rmtree(self.test_dir)
 
@@ -316,6 +466,65 @@ class TestGraphIOFunctions(unittest.TestCase):
     def test_file_with_missing_group_attributes_raises_exception(self):
         with self.assertRaises(ValueError):
             graph = graphio.load_graph(self.test_missing_attr_file)
+
+    def test_convert_to_graphdata_returns_graphdataset_object(self):
+        graph = graphio.load_graph(self.test_three_group_gexf_file, format='GEXF')
+        converted_graph = graphio.convert_to_graphdataset(graph)
+        self.assertTrue(isinstance(converted_graph, GraphDataSet))
+
+    def test_convert_to_graphdata_one_network_per_group(self):
+        graph = graphio.load_graph(self.test_three_group_gexf_file, format='GEXF')
+        converted_graph = graphio.convert_to_graphdataset(graph)
+        self.assertEquals(len(converted_graph.networks), 3)
+
+    def test_convert_to_graphdata_number_of_relations(self):
+        graph = graphio.load_graph(self.test_three_group_gexf_file, format='GEXF')
+        converted_graph = graphio.convert_to_graphdataset(graph)
+        self.assertEquals(len(converted_graph.relations), 3)
+
+    def test_convert_to_graphdata_relations_orientation(self):
+        graph = graphio.load_graph(self.test_three_group_gexf_file, format='GEXF')
+        converted_graph = graphio.convert_to_graphdataset(graph)
+        connections = converted_graph.connections
+
+        for i in range(connections.shape[0]):
+            for j in range(connections.shape[1]):
+                if connections[i,j] != -1:
+                    mat_index = connections[i,j]
+                    relation = converted_graph.relations[mat_index].matrix
+                    src_mat = converted_graph.networks[i].matrix
+                    dst_mat = converted_graph.networks[j].matrix
+                    self.assertEquals(src_mat.shape[0], relation.shape[0])
+                    self.assertEquals(dst_mat.shape[0], relation.shape[1])
+
+    def test_convert_to_graphdata_zero_matrices_relations_are_not_added(self):
+        graph = graphio.load_graph(self.test_three_group_two_relations_gexf_file, format='GEXF')
+        converted_graph = graphio.convert_to_graphdataset(graph)
+        self.assertEquals(len(converted_graph.relations), 2)
+
+    def test_convert_to_graphdata_zero_matrices_relations_connections(self):
+        graph = graphio.load_graph(self.test_three_group_two_relations_gexf_file, format='GEXF')
+        converted_graph = graphio.convert_to_graphdataset(graph)
+        connections = converted_graph.connections
+
+        expected_connections = np.matrix([[-1,  0, -1],
+                                          [-1, -1,  1],
+                                          [-1, -1, -1]])
+
+        for i in range(connections.shape[0]):
+            for j in range(connections.shape[1]):
+                self.assertEquals(connections[i,j], expected_connections[i,j])
+
+    def test_convert_to_graphdata_high_number_of_entity_types(self):
+        graph = graphio.load_graph(self.test_ten_group_gexf_file, format='GEXF')
+        with self.assertRaises(ValueError):
+            converted_graph = graphio.convert_to_graphdataset(graph)
+
+    def test_write_mat_file_load(self):
+        graph = graphio.load_graph(self.test_three_group_two_relations_gexf_file, format='GEXF')
+        converted_graph = graphio.convert_to_graphdataset(graph)
+        converted_graph.write(self.test_dir, 'test_out.mat')
+
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(TestGraphIOFunctions)

@@ -9,7 +9,8 @@ Functions for reading graph files.
 """
 
 import networkx as nx
-from prophtools.common.graphdata import GraphDataSet
+import numpy as np
+from prophtools.common.graphdata import GraphDataSet, RelationNet, EntityNet
 import simplegexf
 import shutil
 import tempfile
@@ -134,8 +135,84 @@ def find_tag_value(att_list, att_id):
 
     return None
 
-def convert_to_mat(graph):
-    pass
+def separate_node_tags_per_group(graph):
+    groups = {}
+    node_list = graph.nodes()
+    for n in node_list:
+        group_tag = graph.node[n]['group']
+        try:
+            groups[group_tag].append(n)
+        except KeyError:
+            groups[group_tag] = [n]
+
+    return groups
+
+def build_within_group_matrix(graph, group_node_list, group_tag, precompute=False):
+    result_mat = []
+    adj_mat = nx.adjacency_matrix(graph).todense()
+    global_node_list = graph.nodes()
+
+    indices = [global_node_list.index(n) for n in group_node_list]
+
+    result_mat = adj_mat[indices,:]
+    result_mat = result_mat[:, indices]
+
+    entity = EntityNet.from_raw_matrix(np.matrix(result_mat), group_tag, group_node_list)
+    return entity
+
+def build_across_groups_matrix(graph, src_node_list, dst_node_list, relation_tag):
+    result_mat = []
+    adj_mat = nx.adjacency_matrix(graph).todense()
+    global_node_list = graph.nodes()
+
+    src_indices = [global_node_list.index(n) for n in src_node_list]
+    dst_indices = [global_node_list.index(n) for n in dst_node_list]
+
+    result_mat = adj_mat[src_indices,:]
+    result_mat = result_mat[:,dst_indices]
+
+    if np.count_nonzero(result_mat) > 0:
+        return RelationNet(result_mat, relation_tag)
+    else:
+        return None
+
+def convert_to_graphdataset(graph):
+    converted_object = None
+
+    networks = []
+    relations = []
+
+    adj_matrix = nx.adjacency_matrix(graph).todense()
+    node_list = graph.nodes()
+
+    groups = separate_node_tags_per_group(graph)
+    groups_list = sorted(groups.keys())
+
+    if len(groups_list) > 10:
+        msg = "WARNING: Number of groups higher than 10."
+        msg += " Please, check that group tag in the XML file corresponds to the different types of entities, not to node ID"
+        raise ValueError(msg)
+
+    for g in groups_list:
+        m = build_within_group_matrix(graph, groups[g], g, precompute=True)
+        networks.append(m)
+
+    # super-adjacency matrix is a |groups|x|groups| matrix
+    connections_mat = np.zeros((len(groups), len(groups)), dtype=int)
+    connections_mat.fill(-1)
+
+    for i in range(len(groups_list)):
+        for j in range(i+1, len(groups_list)):
+            src_tag = groups_list[i]
+            dst_tag = groups_list[j]
+            relation_tag = "{}_{}".format(src_tag, dst_tag)
+            m = build_across_groups_matrix(graph, groups[src_tag], groups[dst_tag], relation_tag)
+            if m:
+                relations.append(m)
+                connections_mat[i,j] = len(relations)-1
+
+    converted_object = GraphDataSet(networks, relations, connections_mat)
+    return converted_object
 
 if __name__ == "__main__":
     test_dir = tempfile.mkdtemp()
