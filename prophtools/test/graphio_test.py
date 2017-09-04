@@ -522,7 +522,7 @@ class TestGraphIOFunctions(unittest.TestCase):
 
     def test_write_mat_file_load(self):
         graph = graphio.load_graph(self.test_three_group_two_relations_gexf_file, format='GEXF')
-        converted_graph = graphio.convert_to_graphdataset(graph)
+        converted_graph = graphio.convert_to_graphdataset(graph, precompute=True)
         converted_graph.write(self.test_dir, 'test_out.mat')
 
 

@@ -147,8 +147,6 @@ Optional parameters:
 
             self.log.info("Prioritizing.")
 
-            
-
             self._run_prioritizer(prioritizer, query_vector,
                                   cfg_params['src'],
                                   cfg_params['dst'],

@@ -36,7 +36,7 @@ from prophtools.utils import loggingtools, validation
 from prophtools.operations.run import LocalRunExperiment
 from prophtools.stats.loo import LOOExperiment
 from prophtools.operations.precompute import NormalizePrecomputeExperiment
-
+from prophtools.operations.preprocessxml import PreprocessXMLExperiment
 
 def get_warranty():
     warranty = """
@@ -88,6 +88,7 @@ usage: prophtools <subcommand> options
     The prophtools subcommands include:
         prioritize   Perform prioritization on a set of networks.
         cross        Perform LOO-cross validation for a given network setup.
+        gexf2mat     Convert a XML GEXF file to .mat file used by ProphTools.
         precompute   Precompute a certain matrix in a .mat file.
     """
     return help_
@@ -115,7 +116,7 @@ if __name__ == "__main__":
 
     parser.add_argument('subcommand',
                         help='command to execute.',
-                        choices=['prioritize', 'cross', 'precompute'],
+                        choices=['prioritize', 'cross', 'precompute', 'gexf2mat'],
                         default='prioritize',
                         nargs='?')
 
@@ -204,7 +205,12 @@ if __name__ == "__main__":
         'precompute': NormalizePrecomputeExperiment(default_config_file,
                                                     exp_id,
                                                     log,
-                                                    section_name='precompute')
+                                                    section_name='precompute'),
+
+        'gexf2mat': PreprocessXMLExperiment(default_config_file,
+                                            exp_id,
+                                            log,
+                                            section_name='build_matrices')
     }
 
     result = experiments[args.subcommand].run(args.override, exp_id)

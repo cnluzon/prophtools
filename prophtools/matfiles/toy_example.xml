@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gexf xmlns="http://www.gexf.net/1.2draft" version="1.2">
+<meta lastmodifieddate="2017-09-04">
+<creator>cnluzon</creator>
+<description>Toy example gexf file to understand use with ProphTools</description>
+</meta>
+<graph defaultedgetype="undirected" mode="static">
+    <!-- Required: group attribute for each node -->
+    <attributes class="node">
+        <attribute id="0" title="group" type="integer"/>    
+    </attributes>
+    <nodes>
+        <node id="0" label="0_group_0">
+            <attvalue for="0" value="0"/>
+        </node>
+        <node id="1" label="1_group_0">
+            <attvalue for="0" value="0"/>
+        </node>
+        <node id="2" label="2_group_0">
+            <attvalue for="0" value="0"/>
+        </node>
+        <node id="3" label="3_group_1">
+            <attvalue for="0" value="1"/>
+        </node>     
+        <node id="4" label="4_group_1">
+            <attvalue for="0" value="1"/>
+        </node>    
+        <node id="5" label="5_group_2">
+            <attvalue for="0" value="2"/>
+        </node>    
+        <node id="6" label="6_group_2">
+            <attvalue for="0" value="2"/>
+        </node>    
+        <node id="7" label="7_group_2">
+            <attvalue for="0" value="2"/>
+        </node>    
+        <node id="8" label="8_group_2">
+            <attvalue for="0" value="2"/>
+        </node>    
+              
+    </nodes>
+
+    <edges>
+        <!-- Edges within groups -->
+        <edge id="0" source="1" target="2" weight="0.25"/>
+        <edge id="1" source="0" target="2" weight="0.88"/>
+        
+        <edge id="2" source="3" target="4" weight="1.00"/>
+        
+        <edge id="3" source="5" target="7" weight="0.52"/>    
+        <edge id="4" source="7" target="8" weight="0.52"/>
+        <edge id="5" source="6" target="8" weight="0.52"/>
+        
+        <!-- Edges across groups -->
+        <edge id="6" source="0" target="3" weight="1.00"/>
+        <edge id="7" source="2" target="4" weight="1.00"/>
+
+        <edge id="8" source="1" target="7" weight="1.00"/> 
+        <edge id="9" source="4" target="6" weight="1.00"/>
+        <edge id="10" source="4" target="8" weight="1.00"/>
+    </edges>
+
+</graph>
+</gexf>

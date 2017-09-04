@@ -11,6 +11,7 @@ Functions for reading graph files.
 import networkx as nx
 import numpy as np
 from prophtools.common.graphdata import GraphDataSet, RelationNet, EntityNet
+import scipy.sparse
 import simplegexf
 import shutil
 import tempfile
@@ -75,6 +76,7 @@ def load_graph(filename, format="GEXF"):
     
     graph = nx.read_gexf(filename)
     load_node_attributes(graph, filename)
+
     return graph
 
 def load_node_attributes(graph, filename):
@@ -114,14 +116,16 @@ def load_node_attributes(graph, filename):
     node_attributes = {}
     for n in nodes_list:
         node_id = n['@id']
+        node_name = n['@label']
         group_value = find_tag_value(n['attvalue'], group_attribute_id)
         if not group_value:
-            msg = "Found a node with no group attribute {}".format(node_id)
+            msg = "Found a node with no group attribute: {}".format(node_id)
             raise ValueError(msg)
 
         node_attributes[node_id] = group_value
 
     nx.set_node_attributes(graph, 'group', node_attributes)
+
     return graph
 
 
@@ -157,8 +161,12 @@ def build_within_group_matrix(graph, group_node_list, group_tag, precompute=Fals
     result_mat = adj_mat[indices,:]
     result_mat = result_mat[:, indices]
 
-    entity = EntityNet.from_raw_matrix(np.matrix(result_mat), group_tag, group_node_list)
-    return entity
+    if precompute:
+        entity = EntityNet.from_raw_matrix(scipy.sparse.csr_matrix(result_mat), group_tag, group_node_list)
+    else:
+        entity = EntityNet(scipy.sparse.csr_matrix(result_mat), group_tag, group_node_list)
+
+    return entity 
 
 def build_across_groups_matrix(graph, src_node_list, dst_node_list, relation_tag):
     result_mat = []
@@ -172,11 +180,11 @@ def build_across_groups_matrix(graph, src_node_list, dst_node_list, relation_tag
     result_mat = result_mat[:,dst_indices]
 
     if np.count_nonzero(result_mat) > 0:
-        return RelationNet(result_mat, relation_tag)
+        return RelationNet(scipy.sparse.csr_matrix(result_mat), relation_tag)
     else:
         return None
 
-def convert_to_graphdataset(graph):
+def convert_to_graphdataset(graph, precompute=False):
     converted_object = None
 
     networks = []
@@ -194,7 +202,7 @@ def convert_to_graphdataset(graph):
         raise ValueError(msg)
 
     for g in groups_list:
-        m = build_within_group_matrix(graph, groups[g], g, precompute=True)
+        m = build_within_group_matrix(graph, groups[g], g, precompute=precompute)
         networks.append(m)
 
     # super-adjacency matrix is a |groups|x|groups| matrix
