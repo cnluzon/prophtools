@@ -98,12 +98,12 @@ class TestPreprocessingFunctions(unittest.TestCase):
         normalized = normalize_matrix(sparse_d)
         self.assertTrue(sparse.issparse(normalized))
 
-    def test_precompute_matrix_returns_sparse_result(self):
+    def test_precompute_matrix_returns_dense_result(self):
 
         normalized = normalize_matrix(self.net_d)
         precomputed = precompute_matrix(normalized)
 
-        self.assertTrue(sparse.issparse(precomputed))
+        self.assertFalse(sparse.issparse(precomputed))
 
 
 if __name__ == '__main__':

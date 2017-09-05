@@ -60,6 +60,9 @@ Optional parameters:
         result['out'] = self.config.get(section, 'out')
         result['corr_function'] = self.config.get(section, 'corr_function')
         result['extreme'] = self.config.get(section, 'extreme').lower() in ['true', 'yes', '1']
+        
+        result['memsave'] = self.config.get(section, 'memsave').lower() in ['yes','true','1']
+        result['profile'] = self.config.get(section, 'profile').lower() in ['yes','true','1']
         return result
 
     def experiment(self, extra_params):
@@ -91,7 +94,8 @@ Optional parameters:
                 return -1
 
             network_data = graphdata.GraphDataSet.read(cfg_params['data_path'],
-                                                       cfg_params['matfile'])
+                                                       cfg_params['matfile'],
+                                                       memsave=cfg_params['memsave'])
 
             src = cfg_params['src']
             dst = cfg_params['dst']
@@ -107,6 +111,11 @@ Optional parameters:
                 out=cfg_params['out'],
                 corr_function=cfg_params['corr_function'],
                 extreme=extreme)
+
+
+            # if cfg_params['memsave']:
+            #     self.log.info("Cleaning up tmp files")
+            #     prioritizer.graphdata.cleanup_resources()
 
             self.log.info("Cross validation run successfully.")
             return 0

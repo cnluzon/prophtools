@@ -54,7 +54,7 @@ def precompute_matrix(m):
     Returns the precomputed matrix for a normalized adjacency matrix m.
     m Must be normalized.
 
-    Returns a sparse matrix (TODO: Change to keep sparsity)
+    Returns a dense matrix (precomputed values are always dense)
 
     Arguments:
         m:      sparse matrix (normalized)
@@ -69,7 +69,7 @@ def precompute_matrix(m):
         output[:, i] = precomp_score
         query[i] = 0
 
-    return output
+    return np.asarray(output.todense())
 
 
 def normalize_matrix(m):

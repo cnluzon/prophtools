@@ -53,16 +53,21 @@ Required parameters:
 Optional parameters:
     corr_function: Correlation function used to compute the score at end
                    of the prioritization. Available functions are pearson and
-                   spearman correlation. Default (pearson).
+                   spearman correlation (Default: pearson).
+    n            : Number of results to show on screen (Default: 10).
+    out          : Output csv file with the prioritization results (Default: none).
+    memsave      : Run ProphTools in a memory save mode. This is recommended for
+                   large networks. (Default: False).
+
         """
         print(help_message)
 
+
     def _run_prioritizer(self, prioritizer, idx_query, origin, destination,
-                         method="prophnet", corr_function="pearson"):
+                         method="prophnet", corr_function="pearson", profile=False):
         """
         A helper method for the experiment routine.
         """
-        num_results = 10
         self._start_profiling()
         results = prioritizer.propagate(idx_query,
                                         origin,
@@ -71,19 +76,31 @@ Optional parameters:
 
         stats = self._end_profiling()
 
-        top_results = min(len(results), num_results)
+        if profile:
+            print stats
+
         sorted_results = sorted(results, key=lambda x: x[0], reverse=True)
 
-        self._print_formatted_results(sorted_results, method, top_results)
+        return sorted_results
         
     def _print_formatted_results(self, results, method, max_results):
+        top_results = min(len(results), max_results)
         print "Entity\tScore"
-        for i in range(max_results):
+        for i in range(top_results):
             result_entity = results[i][1]
             result_score = results[i][0]
 
             result_str = '{}\t{:8.4f}'.format(result_entity, result_score)
             print result_str
+
+    def _save_to_file(self, out, results):
+        fo = open(out, 'w')
+        fo.write('Entity,Score\n')
+        for r in results:
+            result_str = '{},{:8.4f}'.format(r[1], r[0])
+            fo.write(result_str + '\n')
+
+        fo.close()
 
     def _load_parameters(self, section):
         params = {}
@@ -94,6 +111,10 @@ Optional parameters:
         params['corr_function'] = self.config.get(section, 'corr_function')
         params['qindex'] = self.config.get(section, 'qindex')
         params['qname'] = self.config.get(section, 'qname')
+        params['out'] = self.config.get(section, 'out')
+        params['n'] = int(self.config.get(section, 'n'))
+        params['memsave'] = self.config.get(section, 'memsave').lower() in ['yes','true','1']
+        params['profile'] = self.config.get(section, 'profile').lower() in ['yes','true','1']
         return params
 
     def experiment(self, extra_params):
@@ -116,7 +137,7 @@ Optional parameters:
             if validation.check_file_exists(matfile_path, self.log):
                 propagation_data = graphdata.GraphDataSet.read(
                     cfg_params['data_path'],
-                    cfg_params['matfile'])
+                    cfg_params['matfile'], memsave=cfg_params['memsave'])
             else:
                 msg = "Could not open matfile {}. Exiting.".format(matfile_path)
                 self.log.error(msg)
@@ -147,13 +168,25 @@ Optional parameters:
 
             self.log.info("Prioritizing.")
 
-            self._run_prioritizer(prioritizer, query_vector,
+            sorted_results = self._run_prioritizer(prioritizer, query_vector,
                                   cfg_params['src'],
                                   cfg_params['dst'],
-                                  corr_function=cfg_params['corr_function'])
+                                  corr_function=cfg_params['corr_function'],
+                                  profile=cfg_params['profile'])
+
+            self._print_formatted_results(sorted_results, "prophnet", cfg_params['n'])
+
+            if cfg_params['out']:
+                self.log.info("Saving output to file {}".format(cfg_params['out']))
+                self._save_to_file(cfg_params['out'], sorted_results)
+        
+            if cfg_params['memsave']:
+                self.log.info("Cleaning up tmp files")
+                prioritizer.graphdata.cleanup_resources()
 
             self.log.info("Experiment run successfully.")
             return 0
+
         else:
             self._print_help()
             return -1

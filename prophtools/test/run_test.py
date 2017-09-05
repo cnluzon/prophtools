@@ -26,6 +26,10 @@ corr_function = pearson
 matfile =
 qindex =
 qname = 
+out =
+n = 10
+memsave = False
+profile = False
 """
         self.tempdir = tempfile.mkdtemp()
         self.configname = 'config.cfg'
@@ -72,7 +76,7 @@ qname =
         sys.stderr = sys.__stderr__
         sys.stdout = sys.__stdout__
 
-        mock_read.assert_called_with('.', matfile)
+        mock_read.assert_called_with('.', matfile, memsave=False)
         mock_propagate.assert_called()
         
         self.assertEqual(result, 0)
@@ -89,7 +93,28 @@ qname =
         sys.stderr = sys.__stderr__
         sys.stdout = sys.__stdout__
 
-        self.assertEqual(result, -1)        
+        self.assertEqual(result, -1) 
+
+    @mock.patch.object(GraphDataSet, 'read')
+    @mock.patch.object(ProphNet, 'propagate')
+    def test_memsave_is_called(self, mock_propagate, mock_read):
+        cfg_path = os.path.join(self.tempdir, self.configname)
+        
+        exp = run.LocalRunExperiment(cfg_path, 'run', self.log, section_name='run')
+        matfile = os.path.join(self.tempdir, 'mockmat.mat')
+
+        parameters = ['--query', '1', '--src', '0', '--dst', '1', '--matfile', matfile, '--memsave', 'True']
+        sys.stdout = StringIO.StringIO()
+        sys.stderr = StringIO.StringIO()
+        result = exp.run(parameters, self.configname)
+        os.remove('run.cfg')
+        sys.stderr = sys.__stderr__
+        sys.stdout = sys.__stdout__
+
+        mock_read.assert_called_with('.', matfile, memsave=True)
+        mock_propagate.assert_called()
+        
+        self.assertEqual(result, 0)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(

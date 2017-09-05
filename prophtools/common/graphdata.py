@@ -16,10 +16,11 @@ import numpy as np
 
 from scipy.linalg.blas import dgemm
 from scipy import sparse
-
+import shutil
+import sys
 import prophtools.utils.preprocessing as preprocessing
 import random
-
+from tempfile import mkdtemp
 
 class RelationNet:
     """Models a relationship between two different networks. This means it
@@ -190,7 +191,7 @@ class GraphDataSet:
         densify:     convert matrices to dense matrices. This is not recommended,
                      consumes a lot of memory. False by default.
     """
-    def __init__(self, networks, relations, connections, densify=False):
+    def __init__(self, networks, relations, connections, densify=False, tmpdir=None):
 
         self.networks = networks
         self.relations = relations
@@ -198,15 +199,24 @@ class GraphDataSet:
         self.connection_edges = self.compute_connection_edges(connections)
         self.super_adjacency = self.compute_super_adjacency(connections)
         self.is_dense = False
+        self.tmpdir = tmpdir
 
         self._check_consistent_types()
 
         if densify:
             self.densify()
 
+    def cleanup_resources(self):
+        if self.tmpdir:
+            try:
+                shutil.rmtree(self.tmpdir)
+            except:
+                print "Unexpected error deleting tmp file:", sys.exc_info()
+                print self.tmpdir
 
     @staticmethod
-    def _extract_nets_from_data_dictionary(data):
+    # @profile
+    def _extract_nets_from_data_dictionary(data, memsave=False):
         network_names = data['entities']
         network_names = [n.rstrip().encode("utf8") for n in network_names]
         relation_names = data['relations']
@@ -216,8 +226,20 @@ class GraphDataSet:
         relation_nets = []
         entity_nets = []
 
+        tmpdir = None
+        if memsave:
+            tmpdir = mkdtemp()
+
         for name in network_names:
             precomputed_mat = data.get("{}_precomputed".format(name), None)
+            print "PROCESSING: ", name
+            if memsave:
+                filename = os.path.join(tmpdir, '{}_precomp.dat'.format(name))
+                precomputed_memmap = np.memmap(filename, dtype='float32', mode='w+', shape=precomputed_mat.shape)
+                print type(precomputed_mat)
+                precomputed_memmap[:] = precomputed_mat[:]
+                precomputed_mat = precomputed_memmap
+
             new_net = EntityNet(data[name],
                                 name,
                                 data['{}_name'.format(name)],
@@ -229,10 +251,11 @@ class GraphDataSet:
             new_relation = RelationNet(data[name], name)
             relation_nets.append(new_relation)
 
-        return [entity_nets, relation_nets, connections]
+        return [entity_nets, relation_nets, connections, tmpdir]
 
     @classmethod
-    def read(cls, data_path, data_file):
+    # @profile
+    def read(cls, data_path, data_file, memsave=False):
         """
         Loads network data.
 
@@ -242,9 +265,9 @@ class GraphDataSet:
         """
         data = sio.loadmat(os.path.join(data_path, data_file))
 
-        entity_nets, relation_nets, connections = GraphDataSet._extract_nets_from_data_dictionary(data)
+        entity_nets, relation_nets, connections, tmpdir = GraphDataSet._extract_nets_from_data_dictionary(data, memsave=memsave)
 
-        return cls(entity_nets, relation_nets, connections, densify=False)
+        return cls(entity_nets, relation_nets, connections, densify=False, tmpdir=tmpdir)
 
     def get_relation_matrix(self, origin, destination):
         return self.relations[self.connections[origin, destination]].matrix

@@ -16,15 +16,17 @@ class TestProphNetFunctions(unittest.TestCase):
         script_dir = os.path.dirname(__file__)
         absolute_path = os.path.join(script_dir, '../matfiles/')
         self.sample_data = GraphDataSet.read(absolute_path, 'example.mat')
+        self.sample_data_memsave = GraphDataSet.read(absolute_path, 'example.mat', memsave=True)
+
         self.prophnet = ProphNet(self.sample_data)
+        self.prophnet_memsave = ProphNet(self.sample_data_memsave)
 
     def setUp(self):
         self.load_test_data()
 
     def tearDown(self):
         """Function to do cleaning up after the test."""
-
-        pass
+        self.prophnet_memsave.graphdata.cleanup_resources()
 
     def test_find_all_paths_normal_case(self):
         super_adjacency = np.matrix('0 1 1; 1 0 1; 1 1 0')
@@ -96,9 +98,9 @@ class TestProphNetFunctions(unittest.TestCase):
         query_vector = self.prophnet.generate_query_vector(query, dst)
         self.assertEquals(network_length, len(query_vector))
 
-    def _within_network_propagation_best_results_matches_query(self, query):
-        names = self.prophnet.graphdata.networks[0].node_names
-        scores = self.prophnet.propagate(query, 0, 0)
+    def _within_network_propagation_best_results_matches_query(self, method, query):
+        names = method.graphdata.networks[0].node_names
+        scores = method.propagate(query, 0, 0)
 
         sorted_scores = sorted(scores, key=lambda x: x[0], reverse=True)
         result_tag = sorted_scores[0][1]
@@ -106,16 +108,22 @@ class TestProphNetFunctions(unittest.TestCase):
 
         return (query[0] == result_index[0])
 
+    def test_within_network_propagation_memsavemode_same_results(self):
+        queries = [1, 8, 0]
+        for q in queries:
+            result_save = self._within_network_propagation_best_results_matches_query(self.prophnet_memsave, [q])
+            self.assertTrue(result_save)
+
     def test_within_network_propagation_best_result_is_query_a(self):
-        result = self._within_network_propagation_best_results_matches_query([1])
+        result = self._within_network_propagation_best_results_matches_query(self.prophnet, [1])
         self.assertTrue(result)
 
     def test_within_network_propagation_best_result_is_query_b(self):
-        result = self._within_network_propagation_best_results_matches_query([8])
+        result = self._within_network_propagation_best_results_matches_query(self.prophnet, [8])
         self.assertTrue(result)
 
     def test_within_network_propagation_best_result_is_query_c(self):
-        result = self._within_network_propagation_best_results_matches_query([0])
+        result = self._within_network_propagation_best_results_matches_query(self.prophnet, [0])
         self.assertTrue(result)
 
     def test_query_out_of_bounds_raises_exception(self):
@@ -124,21 +132,33 @@ class TestProphNetFunctions(unittest.TestCase):
         with self.assertRaises(ValueError):
             scores = self.prophnet.propagate(query, 0, 0)
 
-    def _across_network_propagation_dst_names_test(self, query, src, dst):
-        scores = self.prophnet.propagate(query, src, dst)
-        names_dst = self.prophnet.graphdata.networks[dst].node_names
+    def _across_network_propagation_dst_names_test(self, method, query, src, dst):
+        scores = method.propagate(query, src, dst)
+        names_dst = method.graphdata.networks[dst].node_names
         return (scores[0][1] in names_dst)
 
     def test_across_network_propagation_returns_dst_net_tags_forward(self):
-        result = self._across_network_propagation_dst_names_test([1], 0, 1)
+        result = self._across_network_propagation_dst_names_test(self.prophnet, [1], 0, 1)
         self.assertTrue(result)
 
     def test_across_network_propagation_returns_dst_net_tags_reverse(self):
-        result = self._across_network_propagation_dst_names_test([1], 1, 0)
+        result = self._across_network_propagation_dst_names_test(self.prophnet, [1], 1, 0)
         self.assertTrue(result)
 
     def test_across_network_propagation_returns_dst_net_tags_forward_2(self):
-        result = self._across_network_propagation_dst_names_test([1], 0, 2)
+        result = self._across_network_propagation_dst_names_test(self.prophnet, [1], 0, 2)
+        self.assertTrue(result)
+
+    def test_across_network_propagation_returns_dst_net_tags_forward_memsave(self):
+        result = self._across_network_propagation_dst_names_test(self.prophnet_memsave, [1], 0, 1)
+        self.assertTrue(result)
+
+    def test_across_network_propagation_returns_dst_net_tags_reverse_memsave(self):
+        result = self._across_network_propagation_dst_names_test(self.prophnet_memsave, [1], 1, 0)
+        self.assertTrue(result)
+
+    def test_across_network_propagation_returns_dst_net_tags_forward_2_memsave(self):
+        result = self._across_network_propagation_dst_names_test(self.prophnet_memsave, [1], 0, 2)
         self.assertTrue(result)
 
 if __name__ == '__main__':

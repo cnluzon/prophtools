@@ -28,7 +28,8 @@ matfile =
 src =
 dst =
 out = stats
-
+memsave = False
+profile = False
 """
         self.tempdir = tempfile.mkdtemp()
         self.configname = 'config.cfg'
@@ -75,7 +76,7 @@ out = stats
         sys.stderr = sys.__stderr__
         sys.stdout = sys.__stdout__
 
-        mock_read.assert_called_with('.', matfile)
+        mock_read.assert_called_with('.', matfile, memsave=False)
         mock_run_cross_validation.assert_called_with(0,
                                                      1,
                                                      fold=5,
