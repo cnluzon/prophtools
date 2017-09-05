@@ -117,6 +117,14 @@ Optional parameters:
         params['profile'] = self.config.get(section, 'profile').lower() in ['yes','true','1']
         return params
 
+    def exit(self, prioritizer, memsave=False, exit_code=-1):
+
+        if memsave:
+            self.log.info("Cleaning up graph resources.")
+            prioritizer.graphdata.cleanup_resources()
+
+        self.log.info("Exiting")
+
     def experiment(self, extra_params):
         """
         Run the experiment. All config overriding and stuff are performed
@@ -153,7 +161,6 @@ Optional parameters:
                 for q in query_name_vector:
                     names = list(prioritizer.graphdata.networks[cfg_params['src']].node_names)
                     names = [i.lower().strip() for i in names]
-                    # print names
                     try:
                         ind = names.index(q)
                         query_index_vector.append(ind)
@@ -162,7 +169,12 @@ Optional parameters:
 
                 if query_index_vector == []:
                     self.log.error("Empty query. Exiting.")
-                    exit(-1)
+                    self.exit(prioritizer, memsave=cfg_params['memsave'])
+                    return -1
+            else:
+                self.log.error("No indices or names provided as query.")
+                self.exit(prioritizer, memsave=cfg_params['memsave'])
+                return -1
 
             query_vector = [int(q) for q in query_index_vector]
 

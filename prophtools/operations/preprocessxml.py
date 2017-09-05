@@ -73,3 +73,8 @@ class PreprocessXMLExperiment(Experiment):
             converted.write(path, outfile)
 
             self.log.info("Process performed successfully")
+            return 0
+
+        else:
+            self.log.error("Exiting")
+            return -1

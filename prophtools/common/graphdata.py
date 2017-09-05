@@ -232,11 +232,9 @@ class GraphDataSet:
 
         for name in network_names:
             precomputed_mat = data.get("{}_precomputed".format(name), None)
-            print "PROCESSING: ", name
             if memsave:
                 filename = os.path.join(tmpdir, '{}_precomp.dat'.format(name))
                 precomputed_memmap = np.memmap(filename, dtype='float32', mode='w+', shape=precomputed_mat.shape)
-                print type(precomputed_mat)
                 precomputed_memmap[:] = precomputed_mat[:]
                 precomputed_mat = precomputed_memmap
 

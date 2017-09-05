@@ -68,7 +68,51 @@ profile = False
         exp = run.LocalRunExperiment(cfg_path, 'run', self.log, section_name='run')
         matfile = os.path.join(self.tempdir, 'mockmat.mat')
 
-        parameters = ['--query', '1', '--src', '0', '--dst', '1', '--matfile', matfile]
+        parameters = ['--qindex', '1', '--src', '0', '--dst', '1', '--matfile', matfile]
+        sys.stdout = StringIO.StringIO()
+        sys.stderr = StringIO.StringIO()
+        result = exp.run(parameters, self.configname)
+        os.remove('run.cfg')
+        sys.stderr = sys.__stderr__
+        sys.stdout = sys.__stdout__
+
+        mock_read.assert_called_with('.', matfile, memsave=False)
+        mock_propagate.assert_called_with([1], 0, 1, "pearson")
+        
+        self.assertEqual(result, 0)
+
+
+    @mock.patch.object(GraphDataSet, 'read')
+    @mock.patch.object(run.LocalRunExperiment, 'exit')
+    def test_required_parameters_qname_non_existing(self, mock_exit, mock_read):
+        cfg_path = os.path.join(self.tempdir, self.configname)
+        
+        exp = run.LocalRunExperiment(cfg_path, 'run', self.log, section_name='run')
+        matfile = os.path.join(self.tempdir, 'mockmat.mat')
+
+        parameters = ['--qname', '1', '--src', '0', '--dst', '1', '--matfile', matfile]
+        sys.stdout = StringIO.StringIO()
+        sys.stderr = StringIO.StringIO()
+        result = exp.run(parameters, self.configname)
+        os.remove('run.cfg')
+        sys.stderr = sys.__stderr__
+        sys.stdout = sys.__stdout__
+
+        mock_read.assert_called_with('.', matfile, memsave=False)
+        mock_exit.assert_called()
+        
+        self.assertEqual(result, -1)
+
+    @mock.patch.object(GraphDataSet, 'read')
+    @mock.patch.object(ProphNet, 'propagate')
+    @mock.patch.object(run.LocalRunExperiment, '_save_to_file')
+    def test_writes_to_output_file_is_called(self, mock_save, mock_propagate, mock_read):
+        cfg_path = os.path.join(self.tempdir, self.configname)
+        
+        exp = run.LocalRunExperiment(cfg_path, 'run', self.log, section_name='run')
+        matfile = os.path.join(self.tempdir, 'mockmat.mat')
+
+        parameters = ['--qindex', '1', '--src', '0', '--dst', '1', '--matfile', matfile, '--out', 'test.txt']
         sys.stdout = StringIO.StringIO()
         sys.stderr = StringIO.StringIO()
         result = exp.run(parameters, self.configname)
@@ -78,14 +122,15 @@ profile = False
 
         mock_read.assert_called_with('.', matfile, memsave=False)
         mock_propagate.assert_called()
-        
+        mock_save.assert_called_with('test.txt', [])
         self.assertEqual(result, 0)
+
 
     def test_required_parameters_non_existing_file_returns_without_running(self):
         cfg_path = os.path.join(self.tempdir, self.configname)
         exp = run.LocalRunExperiment(cfg_path, 'run', self.log, section_name='run')
 
-        parameters = ['--query', '1', '--src', '0', '--dst', '1', '--matfile', 'test.mat']
+        parameters = ['--qindex', '1', '--src', '0', '--dst', '1', '--matfile', 'test.mat']
         sys.stdout = StringIO.StringIO()
         sys.stderr = StringIO.StringIO()
         result = exp.run(parameters, self.configname)
@@ -103,7 +148,7 @@ profile = False
         exp = run.LocalRunExperiment(cfg_path, 'run', self.log, section_name='run')
         matfile = os.path.join(self.tempdir, 'mockmat.mat')
 
-        parameters = ['--query', '1', '--src', '0', '--dst', '1', '--matfile', matfile, '--memsave', 'True']
+        parameters = ['--qindex', '1', '--src', '0', '--dst', '1', '--matfile', matfile, '--memsave', 'True']
         sys.stdout = StringIO.StringIO()
         sys.stderr = StringIO.StringIO()
         result = exp.run(parameters, self.configname)

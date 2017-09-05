@@ -26,26 +26,30 @@ def LG(F, alpha, C_H, maxiter):
 
 
 def estimate_precomputing_time(m, iterations=5):
-    n_iterations_max = iterations
+    expected_time = 0.0
 
-    n_iterations = min(n_iterations_max, m.shape[0])
-    times = np.zeros(n_iterations)
+    if iterations > 0:
+        n_iterations_max = iterations
 
-    output = sparse.lil_matrix((m.shape))
-    query = np.zeros((m.shape[0], 1))
+        n_iterations = min(n_iterations_max, m.shape[0])
+        times = np.zeros(n_iterations)
 
-    for i in range(n_iterations):
-        start = time.clock()
-        query[i] = 1
-        [temp, precomp_score] = LG(query, 0.9, m, 1000)
-        output[:, i] = precomp_score
-        query[i] = 0
-        end = time.clock()
-        times[i] = end-start
+        output = sparse.lil_matrix((m.shape))
+        query = np.zeros((m.shape[0], 1))
 
-    average_time = np.mean(times)
+        for i in range(n_iterations):
+            start = time.clock()
+            query[i] = 1
+            [temp, precomp_score] = LG(query, 0.9, m, 1000)
+            output[:, i] = precomp_score
+            query[i] = 0
+            end = time.clock()
+            times[i] = end-start
 
-    expected_time = average_time * m.shape[0]
+        average_time = np.mean(times)
+
+        expected_time = average_time * m.shape[0]
+
     return expected_time
 
 

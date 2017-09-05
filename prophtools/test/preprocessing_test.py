@@ -3,7 +3,7 @@
 import unittest
 import numpy as np
 
-from prophtools.utils.preprocessing import precompute_matrix, normalize_matrix
+from prophtools.utils.preprocessing import precompute_matrix, normalize_matrix, estimate_precomputing_time
 import scipy.sparse as sparse
 
 """
@@ -105,6 +105,15 @@ class TestPreprocessingFunctions(unittest.TestCase):
 
         self.assertFalse(sparse.issparse(precomputed))
 
+    def test_estimate_precomputing_runs(self):
+        result = estimate_precomputing_time(self.net_d, iterations=2)
+        self.assertTrue(result > 0)
+
+    def test_estimate_precomputing_zero_iterations_equals_zero_time(self):
+        result = estimate_precomputing_time(self.net_d, iterations=0)
+        self.assertEquals(result, 0.00)
+
+    
 
 if __name__ == '__main__':
 
