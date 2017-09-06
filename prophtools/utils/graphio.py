@@ -55,12 +55,29 @@ def read_txt_nodes(fi):
     result = []
     line = fi.readline()
     node_id_list = []
+    group_list = set()
+
     while line and line[0:2] != "##":
         fields = line.rstrip().split()
-        node_id = fields[0]
-        
-        node_info = (node_id, {'label':fields[1], 'group':fields[2]})
+        group = ''
+        if len(fields) == 2:
+            if group_list:
+                msg = "Wrong file format. Missing group for node {}.".format(node_id)
+                raise ValueError(msg)
+            else:
+                msg = "WARNING: Missing group field. Assuming homogeneous network."
+                group = '0'
 
+        elif len(fields) < 2:
+            msg = "Wrong file format. Missing fields in line {}".format(str(fields))
+            raise ValueError(msg)
+
+        else:
+            group = fields[2]
+            group_list.add(group)
+
+        node_id = fields[0]
+        node_info = (node_id, {'label':fields[1], 'group':group})
         if node_id in node_id_list:
             msg = "Node IDs must be unique. Found repeated element {}".format(node_id)
             raise ValueError(msg)
@@ -72,7 +89,6 @@ def read_txt_nodes(fi):
 
     if not line:
         print "Warning: Empty line reached with no ## edge signal found."
-
     return result 
 
 def read_txt_edges(fi):
@@ -81,17 +97,15 @@ def read_txt_edges(fi):
     while line:
         fields = line.rstrip().split()
         try:
-            edge_info = (int(fields[0]), int(fields[1]), {'weight': float(fields[2])})
+            edge_info = (fields[0], fields[1], {'weight': float(fields[2])})
         except ValueError:
-            msg = "Edge info fields must be src (ID integer), dst (ID integer) and weight in that order. Weight must be a floating point number."
+            msg = "Edge info fields must be src (ID), dst (ID) and weight in that order. Weight must be a floating point number."
             raise ValueError(msg)
 
         result.append(edge_info)
         line = fi.readline()
 
     return result
-
-
 
 def load_node_attributes(graph, filename):
     """

@@ -25,7 +25,9 @@ class TestGraphIOFunctions(unittest.TestCase):
         self.test_missing_attr_file = os.path.join(self.test_dir, 'missing_attr.gexf')
 
         self.test_txt_file = os.path.join(self.test_dir, 'temp.txt')
-        
+        self.test_txt_missing_group_file = os.path.join(self.test_dir, 'temp2.txt')
+        self.test_txt_no_group_file = os.path.join(self.test_dir, 'temp3.txt')
+
         self._write_sample_gexf_file(self.test_file)
         self._write_sample_three_group_gexf_file(self.test_three_group_gexf_file)
         self._write_sample_three_group_two_relations_gexf_file(self.test_three_group_two_relations_gexf_file)
@@ -34,6 +36,8 @@ class TestGraphIOFunctions(unittest.TestCase):
         self._write_gexf_file_no_group_attribute(self.test_no_attr_file)
         self._write_gexf_file_missing_attributes(self.test_missing_attr_file)
         self._write_txt_file(self.test_txt_file)
+        self._write_txt_file_no_group(self.test_txt_no_group_file)
+        self._write_txt_file_missing_group(self.test_txt_missing_group_file)
 
     def _write_txt_file(self, filename):
         value = """0 node_0 0
@@ -42,6 +46,58 @@ class TestGraphIOFunctions(unittest.TestCase):
 3 node_3 1
 4 node_4 1
 5 node_5 2
+6 node_6 2
+7 node_7 2
+8 node_8 2
+##
+1 2 0.25
+0 2 0.88
+3 4 1.00
+5 7 0.52
+7 8 0.52
+6 8 0.52
+0 3 1.00
+2 4 1.00
+1 7 1.00
+4 6 1.00 
+4 8 1.00"""
+        fo = open(filename, 'w')
+        fo.write(value)
+        fo.close()
+
+    def _write_txt_file_no_group(self, filename):
+        value = """0 node_0
+1 node_1
+2 node_2
+3 node_3
+4 node_4
+5 node_5
+6 node_6
+7 node_7
+8 node_8
+##
+1 2 0.25
+0 2 0.88
+3 4 1.00
+5 7 0.52
+7 8 0.52
+6 8 0.52
+0 3 1.00
+2 4 1.00
+1 7 1.00
+4 6 1.00 
+4 8 1.00"""
+        fo = open(filename, 'w')
+        fo.write(value)
+        fo.close()
+
+    def _write_txt_file_missing_group(self, filename):
+        value = """0 node_0 0
+1 node_1 2
+2 node_2 2
+3 node_3 0
+4 node_4 0
+5 node_5
 6 node_6 2
 7 node_7 2
 8 node_8 2
@@ -495,8 +551,8 @@ class TestGraphIOFunctions(unittest.TestCase):
         
         for i in range(result.shape[0]):
             for j in range(result.shape[1]):
-                result_i = nodes.index(i)  # Order of the nodes is not fixed
-                result_j = nodes.index(j)
+                result_i = nodes.index(str(i))  # Order of the nodes is not fixed
+                result_j = nodes.index(str(j))
                 self.assertEquals(adj_matrix[i,j], result[result_i,result_j])
 
 
@@ -542,6 +598,17 @@ class TestGraphIOFunctions(unittest.TestCase):
         self.assertEquals(graph.node['1']['group'], '0')
         self.assertEquals(graph.node['2']['group'], '0')
         self.assertEquals(graph.node['3']['group'], '0')
+
+    def test_file_with_no_group_attribute_assigns_same_to_all_txt(self):
+        graph = graphio.load_graph(self.test_txt_no_group_file, format='TXT')
+        self.assertEquals(graph.node['0']['group'], '0')
+        self.assertEquals(graph.node['1']['group'], '0')
+        self.assertEquals(graph.node['2']['group'], '0')
+        self.assertEquals(graph.node['3']['group'], '0')
+
+    def test_file_with_missing_group_attributes_raises_exception_txt(self):
+        with self.assertRaises(ValueError):
+            graph = graphio.load_graph(self.test_txt_missing_group_file, format='TXT')
 
     def test_file_with_missing_group_attributes_raises_exception(self):
         with self.assertRaises(ValueError):
