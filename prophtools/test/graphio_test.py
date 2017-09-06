@@ -29,7 +29,7 @@ class TestGraphIOFunctions(unittest.TestCase):
         self._write_sample_three_group_two_relations_gexf_file(self.test_three_group_two_relations_gexf_file)
         self._write_sample_ten_group_gexf_file(self.test_ten_group_gexf_file)
         
-        self._write_gexf_file_no_attributes(self.test_no_attr_file)
+        self._write_gexf_file_no_group_attribute(self.test_no_attr_file)
         self._write_gexf_file_missing_attributes(self.test_missing_attr_file)
 
     def _write_gexf_file_missing_attributes(self, filename):
@@ -77,7 +77,7 @@ class TestGraphIOFunctions(unittest.TestCase):
         fo.close()
 
 
-    def _write_gexf_file_no_attributes(self, filename):
+    def _write_gexf_file_no_group_attribute(self, filename):
         value = """<?xml version="1.0" encoding="UTF-8"?>
 <gexf xmlns="http://www.gexf.net/1.2draft" version="1.2">
 <meta lastmodifieddate="2014-01-30">
@@ -317,7 +317,7 @@ class TestGraphIOFunctions(unittest.TestCase):
 </meta>
 <graph defaultedgetype="undirected" mode="static">
     <attributes class="node">
-        <attribute id="0" title="group" type="integer"/>    
+        <attribute id="0" title="group" type="string"/>    
     </attributes>
     <nodes>
         <node id="0" label="0_group_0">
@@ -459,9 +459,12 @@ class TestGraphIOFunctions(unittest.TestCase):
         self.assertEquals(graph.node['2']['group'], '1')
         self.assertEquals(graph.node['3']['group'], '1')
 
-    def test_file_with_no_group_attribute_raises_exception(self):
-        with self.assertRaises(ValueError):
-            graph = graphio.load_graph(self.test_no_attr_file)
+    def test_file_with_no_group_attribute_assigns_same_to_all(self):
+        graph = graphio.load_graph(self.test_no_attr_file)
+        self.assertEquals(graph.node['0']['group'], '0')
+        self.assertEquals(graph.node['1']['group'], '0')
+        self.assertEquals(graph.node['2']['group'], '0')
+        self.assertEquals(graph.node['3']['group'], '0')
 
     def test_file_with_missing_group_attributes_raises_exception(self):
         with self.assertRaises(ValueError):

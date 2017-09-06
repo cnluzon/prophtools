@@ -88,7 +88,7 @@ def load_node_attributes(graph, filename):
     # print dir(gexf)
     
     attributes_list = gexf.data['graph']['attributes']['attribute']
-    group_attribute_id = None
+    nodes_list = gexf.data['graph']['nodes']['node']
 
     att_names = []
     try:    
@@ -97,30 +97,23 @@ def load_node_attributes(graph, filename):
         att_names = [attributes_list['@title']]
 
     if 'group' not in att_names:
-        msg = "Invalid node attributes. These should include a group integer attribute"
-        raise ValueError(msg)
+        msg = "Warning: No group attribute found. A single network will be considered."
+        # raise ValueError(msg)
+        print msg
 
-    if not isinstance(attributes_list, list):
-        attributes_list = [attributes_list]
-
-    for a in attributes_list:
-        if a['@title'] == 'group':
-            group_attribute_id = a['@id']
-            if a['@type'] != 'integer':
-                msg = "Invalid troup type attribute. Should be an integer."
-                raise ValueError(msg)
-
-
-    nodes_list = gexf.data['graph']['nodes']['node']
+    group_attribute_id = find_tag_attribute(attributes_list, 'group')
 
     node_attributes = {}
     for n in nodes_list:
         node_id = n['@id']
         node_name = n['@label']
-        group_value = find_tag_value(n['attvalue'], group_attribute_id)
-        if not group_value:
-            msg = "Found a node with no group attribute: {}".format(node_id)
-            raise ValueError(msg)
+        group_value = "0"
+        if group_attribute_id:
+            group_value = find_tag_value(n['attvalue'], group_attribute_id)
+
+            if not group_value:
+                msg = "Found a node with no group attribute: {}".format(node_id)
+                raise ValueError(msg)
 
         node_attributes[node_id] = group_value
 
@@ -128,6 +121,16 @@ def load_node_attributes(graph, filename):
 
     return graph
 
+def find_tag_attribute(att_list, att_id):
+    if not isinstance(att_list, list):
+        att_list = [att_list]
+
+    group_attribute_id = None
+    for a in att_list:
+        if a['@title'] == att_id:
+            group_attribute_id = a['@id']
+
+    return group_attribute_id
 
 def find_tag_value(att_list, att_id):
     if not isinstance(att_list, list):
