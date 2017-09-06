@@ -17,53 +17,9 @@ import shutil
 import tempfile
 import os
 
-def _write_sample_gexf_file(filename):
-    value = """<?xml version="1.0" encoding="UTF-8"?>
-<gexf xmlns="http://www.gexf.net/1.2draft" version="1.2">
-<meta lastmodifieddate="2014-01-30">
-<creator>Gephi 0.8.1</creator>
-<description></description>
-</meta>
-<graph defaultedgetype="undirected" mode="static">
-    <attributes class="node">
-        <attribute id="0" title="group" type="integer"/>
-        <attribute id="1" title="other" type="integer"/>
-    </attributes>
-    <nodes>
-        <node id="0" label="Mark Johnson">
-            <attvalue for="0" value="0"/>
-            <attvalue for="1" value="0"/>
-        </node>
-        <node id="1" label="Jane Schwartz">
-            <attvalue for="0" value="0"/>
-            <attvalue for="1" value="0"/>
-        </node>
-        <node id="2" label="Ed Lopez">
-            <attvalue for="0" value="1"/>
-            <attvalue for="1" value="0"/>
-        </node>
-        <node id="3" label="Maria Lopez">
-            <attvalue for="0" value="1"/>
-            <attvalue for="1" value="0"/>
-        </node>            
-    </nodes>
-
-    <edges>
-        <edge id="0" source="0" target="1" weight="0.25"/>
-        <edge id="1" source="0" target="3" weight="0.88"/>
-        <edge id="2" source="2" target="3" weight="1.00"/>
-        <edge id="3" source="1" target="2" weight="0.52"/>           
-    </edges>
-
-</graph>
-</gexf>
-    """
-    fo = open(filename, 'w')
-    fo.write(value)
-    fo.close()
 
 def validate_allowed_format(f):
-    allowed_formats = ['GEXF']
+    allowed_formats = ['GEXF', 'TXT']
     if f.upper() not in allowed_formats:
         return False
     return True
@@ -74,10 +30,68 @@ def load_graph(filename, format="GEXF"):
         msg = "Unknown format: {}".format(format)
         raise TypeError(msg)
     
-    graph = nx.read_gexf(filename)
-    load_node_attributes(graph, filename)
+    if format == "GEXF":
+        graph = nx.read_gexf(filename)
+        load_node_attributes(graph, filename)
+
+    elif format == "TXT":
+        graph = read_txt_graph(filename)
 
     return graph
+
+def read_txt_graph(filename):
+    fi = open(filename)
+    node_list = read_txt_nodes(fi)
+    edge_list = read_txt_edges(fi)
+
+    result_graph = nx.Graph()
+    result_graph.add_nodes_from(node_list)
+    result_graph.add_edges_from(edge_list)
+
+    fi.close()
+    return result_graph
+
+def read_txt_nodes(fi):
+    result = []
+    line = fi.readline()
+    node_id_list = []
+    while line and line[0:2] != "##":
+        fields = line.rstrip().split()
+        node_id = fields[0]
+        
+        node_info = (node_id, {'label':fields[1], 'group':fields[2]})
+
+        if node_id in node_id_list:
+            msg = "Node IDs must be unique. Found repeated element {}".format(node_id)
+            raise ValueError(msg)
+
+        node_id_list.append(node_id)
+
+        result.append(node_info)
+        line = fi.readline()
+
+    if not line:
+        print "Warning: Empty line reached with no ## edge signal found."
+
+    return result 
+
+def read_txt_edges(fi):
+    result  =[]
+    line = fi.readline()
+    while line:
+        fields = line.rstrip().split()
+        try:
+            edge_info = (int(fields[0]), int(fields[1]), {'weight': float(fields[2])})
+        except ValueError:
+            msg = "Edge info fields must be src (ID integer), dst (ID integer) and weight in that order. Weight must be a floating point number."
+            raise ValueError(msg)
+
+        result.append(edge_info)
+        line = fi.readline()
+
+    return result
+
+
 
 def load_node_attributes(graph, filename):
     """
@@ -224,11 +238,3 @@ def convert_to_graphdataset(graph, precompute=False):
 
     converted_object = GraphDataSet(networks, relations, connections_mat)
     return converted_object
-
-if __name__ == "__main__":
-    test_dir = tempfile.mkdtemp()
-    test_file = os.path.join(test_dir, 'temp.gexf')
-    _write_sample_gexf_file(test_file)
-
-    g = load_graph(test_file)
-    shutil.rmtree(test_dir)

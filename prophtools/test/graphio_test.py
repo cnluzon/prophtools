@@ -23,6 +23,8 @@ class TestGraphIOFunctions(unittest.TestCase):
         self.test_no_attr_file = os.path.join(self.test_dir, 'no_attribute.gexf')
 
         self.test_missing_attr_file = os.path.join(self.test_dir, 'missing_attr.gexf')
+
+        self.test_txt_file = os.path.join(self.test_dir, 'temp.txt')
         
         self._write_sample_gexf_file(self.test_file)
         self._write_sample_three_group_gexf_file(self.test_three_group_gexf_file)
@@ -31,6 +33,33 @@ class TestGraphIOFunctions(unittest.TestCase):
         
         self._write_gexf_file_no_group_attribute(self.test_no_attr_file)
         self._write_gexf_file_missing_attributes(self.test_missing_attr_file)
+        self._write_txt_file(self.test_txt_file)
+
+    def _write_txt_file(self, filename):
+        value = """0 node_0 0
+1 node_1 0
+2 node_2 0
+3 node_3 1
+4 node_4 1
+5 node_5 2
+6 node_6 2
+7 node_7 2
+8 node_8 2
+##
+1 2 0.25
+0 2 0.88
+3 4 1.00
+5 7 0.52
+7 8 0.52
+6 8 0.52
+0 3 1.00
+2 4 1.00
+1 7 1.00
+4 6 1.00 
+4 8 1.00"""
+        fo = open(filename, 'w')
+        fo.write(value)
+        fo.close()
 
     def _write_gexf_file_missing_attributes(self, filename):
         value = """<?xml version="1.0" encoding="UTF-8"?>
@@ -396,6 +425,9 @@ class TestGraphIOFunctions(unittest.TestCase):
             unknown_format = "unknown"
             graphio.load_graph(self.test_file, format=unknown_format)
 
+    def test_load_graph_txt_valid_format_runs(self):
+        graphio.load_graph(self.test_txt_file, format='TXT')
+
     def test_load_graph_gexf_valid_format_runs(self):
         graphio.load_graph(self.test_file, format='GEXF')
 
@@ -403,12 +435,27 @@ class TestGraphIOFunctions(unittest.TestCase):
         graph = graphio.load_graph(self.test_file, format='GEXF')
         self.assertEquals(len(graph.nodes()), 4)
 
+    def test_load_graph_txt_node_number(self):
+        graph = graphio.load_graph(self.test_txt_file, format='TXT')
+        self.assertEquals(len(graph.nodes()), 9)
+
     def test_load_graph_gexf_edge_number(self):
         graph = graphio.load_graph(self.test_file, format='GEXF')
         self.assertEquals(len(graph.edges()), 4)
 
+    def test_load_graph_txt_edge_number(self):
+        graph = graphio.load_graph(self.test_txt_file, format='TXT')
+        self.assertEquals(len(graph.edges()), 11)
+
     def test_load_graph_gexf_undirected_symmetric_adj_matrix(self):
         graph = graphio.load_graph(self.test_file, format='GEXF')
+        adj_matrix  = nx.adjacency_matrix(graph).todense()
+        for i in range(adj_matrix.shape[0]):
+            for j in range(i+1, adj_matrix.shape[1]):
+                self.assertEquals(adj_matrix[i,j], adj_matrix[j,i])
+
+    def test_load_graph_txt_undirected_symmetric_adj_matrix(self):
+        graph = graphio.load_graph(self.test_txt_file, format='TXT')
         adj_matrix  = nx.adjacency_matrix(graph).todense()
         for i in range(adj_matrix.shape[0]):
             for j in range(i+1, adj_matrix.shape[1]):
@@ -429,6 +476,29 @@ class TestGraphIOFunctions(unittest.TestCase):
                 result_i = nodes.index(str(i))  # Order of the nodes is not fixed
                 result_j = nodes.index(str(j))
                 self.assertEquals(adj_matrix[i,j], result[result_i,result_j])
+
+    def test_load_graph_txt_three_adjacency_matrix(self):
+#                    0     1     2     3     4     5     6     7     8   
+        result = np.matrix([[0.00, 0.00, 0.88, 1.00, 0.00, 0.00, 0.00, 0.00, 0.00], # 0
+                            [0.00, 0.00, 0.25, 0.00, 0.00, 0.00, 0.00, 1.00, 0.00], # 1 
+                            [0.88, 0.25, 0.00, 0.00, 1.00, 0.00, 0.00, 0.00, 0.00], # 2
+                            [1.00, 0.00, 0.00, 0.00, 1.00, 0.00, 0.00, 0.00, 0.00], # 3
+                            [0.00, 0.00, 1.00, 1.00, 0.00, 0.00, 1.00, 0.00, 1.00], # 4
+                            [0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.52, 0.00], # 5
+                            [0.00, 0.00, 0.00, 0.00, 1.00, 0.00, 0.00, 0.00, 0.52], # 6
+                            [0.00, 1.00, 0.00, 0.00, 0.00, 0.52, 0.00, 0.00, 0.52], # 7
+                            [0.00, 0.00, 0.00, 0.00, 1.00, 0.00, 0.52, 0.52, 0.00]]) # 8
+
+        graph = graphio.load_graph(self.test_txt_file, format='TXT')
+        nodes = graph.nodes()
+        adj_matrix = nx.adjacency_matrix(graph).todense()
+        
+        for i in range(result.shape[0]):
+            for j in range(result.shape[1]):
+                result_i = nodes.index(i)  # Order of the nodes is not fixed
+                result_j = nodes.index(j)
+                self.assertEquals(adj_matrix[i,j], result[result_i,result_j])
+
 
     def test_load_graph_gexf_three_adjacency_matrix(self):
         #                    0     1     2     3     4     5     6     7     8   
@@ -458,6 +528,13 @@ class TestGraphIOFunctions(unittest.TestCase):
         self.assertEquals(graph.node['1']['group'], '0')
         self.assertEquals(graph.node['2']['group'], '1')
         self.assertEquals(graph.node['3']['group'], '1')
+
+    def test_node_attributes_txt(self):
+        graph = graphio.load_graph(self.test_txt_file, format='TXT')
+        self.assertEquals(graph.node['0']['group'], '0')
+        self.assertEquals(graph.node['1']['group'], '0')
+        self.assertEquals(graph.node['2']['group'], '0')
+        self.assertEquals(graph.node['3']['group'], '1')      
 
     def test_file_with_no_group_attribute_assigns_same_to_all(self):
         graph = graphio.load_graph(self.test_no_attr_file)

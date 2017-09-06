@@ -90,14 +90,14 @@ Optional parameters:
             result_entity = results[i][1]
             result_score = results[i][0]
 
-            result_str = '{}\t{:8.4f}'.format(result_entity, result_score)
+            result_str = '{}\t{:8.6f}'.format(result_entity.encode('utf-8'), result_score)
             print result_str
 
     def _save_to_file(self, out, results):
         fo = open(out, 'w')
         fo.write('Entity,Score\n')
         for r in results:
-            result_str = '{},{:8.4f}'.format(r[1], r[0])
+            result_str = '{},{:8.6f}'.format(r[1].encode('utf-8'), r[0])
             fo.write(result_str + '\n')
 
         fo.close()
