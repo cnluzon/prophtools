@@ -87,6 +87,17 @@ class TestEntityNetFunctions(unittest.TestCase):
         type_after = type(a_from_raw.matrix)
         self.assertNotEqual(type_before, type_after)
 
+    def test_get_network_index(self):
+        dataset = self._create_good_graphdataset()
+        index = dataset.get_network_index('net_a')
+        self.assertEqual(index, 0)
+
+    def test_get_network_index_missing_returns_minus_one(self):
+        dataset = self._create_good_graphdataset()
+        index = dataset.get_network_index('non_existing_net')
+        self.assertEqual(index, -1)
+
+
     def test_inconsistency_length_names_matrix_dims_raises_exception(self):
         new_names = ['a0']
         with self.assertRaises(ValueError):

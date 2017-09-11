@@ -206,6 +206,13 @@ class GraphDataSet:
         if densify:
             self.densify()
 
+    def get_network_index(self, net_name):
+        for i, n in enumerate(self.networks):
+            if n.name == net_name:
+                return i
+
+        return -1
+
     def cleanup_resources(self):
         if self.tmpdir:
             try:

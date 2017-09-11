@@ -45,8 +45,10 @@ configuration.
 Required parameters:
     matfile: mat file containing the networks and their configuration (see
              ProphTools documentation for more info on this format.)
-    src    : Source network (as an index)
-    dst    : Destination network (as an index)
+
+             Run prophtools buildmat in order to generate these files from gexf or txt files.
+    src    : Source network (index or group name)
+    dst    : Destination network (index or group name)
     qindex : Comma-separated list of indexes that are on the query target.
     qname  : Comma-separated list of IDs of the nodes in the query target.
 
@@ -105,8 +107,9 @@ Optional parameters:
     def _load_parameters(self, section):
         params = {}
         params['data_path'] = self.config.get(section, 'data_path')
-        params['src'] = int(self.config.get(section, 'src'))
-        params['dst'] = int(self.config.get(section, 'dst'))
+        params['src'] = self.config.get(section, 'src')
+        params['dst'] = self.config.get(section, 'dst')
+        
         params['matfile'] = self.config.get(section, 'matfile')
         params['corr_function'] = self.config.get(section, 'corr_function')
         params['qindex'] = self.config.get(section, 'qindex')
@@ -135,6 +138,8 @@ Optional parameters:
         required = ['matfile', 'src', 'dst']
         if self._are_required_parameters_valid(self.config, required):
             cfg_params = self._load_parameters("run")
+            src_network =cfg_params['src']
+            dst_network = cfg_params['dst']
 
             self.log.info("Loading data.")
 
@@ -145,7 +150,8 @@ Optional parameters:
             if validation.check_file_exists(matfile_path, self.log):
                 propagation_data = graphdata.GraphDataSet.read(
                     cfg_params['data_path'],
-                    cfg_params['matfile'], memsave=cfg_params['memsave'])
+                    cfg_params['matfile'],
+                    memsave=cfg_params['memsave'])
             else:
                 msg = "Could not open matfile {}. Exiting.".format(matfile_path)
                 self.log.error(msg)
@@ -153,19 +159,39 @@ Optional parameters:
             
             prioritizer = method.ProphNet(propagation_data)
 
+            try:
+                src_index = int(src_network)
+            except ValueError:
+                self.log.debug('Considering src as network label')
+                src_index = propagation_data.get_network_index(src_network)
+
+            try:
+                dst_index = int(dst_network)
+            except ValueError:
+                self.log.debug('Considering dst as network label')
+                dst_index = propagation_data.get_network_index(dst_network)
+
+            if src_index == -1:
+                self.log.error('Source network not valid: {}. Exiting.'.format(src_network))
+                return -1
+            if dst_index == -1:
+                self.log.error('Destination network not valid: {}. Exiting.'.format(dst_network))
+                return -1
+
             query_index_vector = []
             if cfg_params['qindex']:
                 query_index_vector = cfg_params['qindex'].split(',')
             elif cfg_params['qname']:
                 query_name_vector = cfg_params['qname'].split(',')
                 for q in query_name_vector:
-                    names = list(prioritizer.graphdata.networks[cfg_params['src']].node_names)
+                    names = list(prioritizer.graphdata.networks[src_index].node_names)
                     names = [i.lower().strip() for i in names]
                     try:
                         ind = names.index(q)
                         query_index_vector.append(ind)
                     except ValueError:
-                        self.log.warning("Query ID {} not found in src network.".format(q))
+                        self.log.warning("Query ID {} not found in src network {} ({}).".format(q, src_network, src_index))
+
 
                 if query_index_vector == []:
                     self.log.error("Empty query. Exiting.")
@@ -181,8 +207,8 @@ Optional parameters:
             self.log.info("Prioritizing.")
 
             sorted_results = self._run_prioritizer(prioritizer, query_vector,
-                                  cfg_params['src'],
-                                  cfg_params['dst'],
+                                  src_index,
+                                  dst_index,
                                   corr_function=cfg_params['corr_function'],
                                   profile=cfg_params['profile'])
 
