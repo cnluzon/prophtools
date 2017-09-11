@@ -1,11 +1,13 @@
 CHANGELOG
 =========
 
-09/06/2017 - Prophtools v1.1.
+09/11/2017 - Prophtools v1.1.
 
-* TXT file support for simple graphs (explained now in the documentation)
-* GEXF file support based on simlegexf python library (https://github.com/demux/simplegexf).
-* "Group" attribute on GEXF nodes allows to define heterogeneous networks.
+* TXT file support (explained now in the documentation).
+* GEXF file support based on simlegexf python library (https://github.com/demux/simplegexf) and networkx (https://networkx.github.io/).
+* Group attribute on GEXF nodes to define heterogeneous networks.
 * Conversion GEXF to .mat files for compatibility with previous versions of prophnet/prophtools.
-* Beta: Memsave mode for very large networks.
 * Csv output for prioritization results.
+* labels_as_ids option to use label in input files as identifiers.
+
+* BETA: Memsave mode for very large networks.

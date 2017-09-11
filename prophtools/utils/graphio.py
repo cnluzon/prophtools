@@ -58,7 +58,7 @@ def read_txt_nodes(fi):
     node_id_list = []
     group_list = set()
 
-    while line and line[0:2] != "##":
+    while line and line[0] != "#":
         fields = line.rstrip().split()
         group = ''
         if len(fields) == 2:
