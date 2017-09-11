@@ -1,5 +1,5 @@
 ====================================================================================
-ProphTools v1.0. General Prioritization Tools for Heterogeneous Biological Networks
+ProphTools. General Prioritization Tools for Heterogeneous Biological Networks
 ====================================================================================
 
 Authors: Carmen Navarro Luzón, Víctor Martínez Gómez
@@ -13,9 +13,9 @@ Authors: Carmen Navarro Luzón, Víctor Martínez Gómez
 About ProphTools
 ================
 
-``ProphTools`` allow to perform heterogeneous network prioritization on a set 
+``ProphTools`` package allows to perform heterogeneous network prioritization on a set 
 of interconnected networks, prioritizing from a query network to the target 
-network by means of a hybrid approach including a Random Walk with Restarts
+network by means of a hybrid approach including a Random Walk with Restarts for
 within network approach and propagation across different networks based on these
 results. Final scores are computed correlating the results from
 propagating from the query network to the target network and correlating target
@@ -92,49 +92,177 @@ Note that you need to provide the full path to the directory that is going to be
 How to use
 ==========
 
-Prophtools is a command line tool. Right now, it has two main functionalities:
+``Prophtools`` is a command line tool. It runs internally on .mat files (for more information, see **Network configuration file format** below). In order to improve usability, the latest version of ProphTools includes conversion to this .mat formal from two file formats: 
 
-Prioritize on a network set
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* **TXT format** based on Trivial Graph Format (TGF).
+* **Graph Exchange XML format (GEXF)**. XML-based Graph specification used in many applications: https://gephi.org/gexf/format/.
 
-Prophtools will take as an input a .mat file containing your network configuration
-and three more required parameters: 
+ProphTools input file description
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-source network (src), 
-destination network (dst), and
-query list (a list of indexes separated by commas containing the source network
-node indexes that are going to be propagated).
+As mentioned above, ``ProphTools`` can convert two types of graph specification files to its internal ``.mat`` files. This can be done by the following command: ::
+
+    prophtools buildmat --file toy_example.txt --format txt --out toy_example.mat
+
+Where format can be either txt or gexf, the current supported file formats. This process will also build the **precomputed** matrices that ProphTools requires to improve computation time. Please note that precomputing can take long time in large matrices. However, this process only needs to take place once.
+
+TXT file format
+---------------
+The simplest file format ProphTools can handle is a TXT file based on Trivial Graph Format (TGF). Trivial Graph Format only includes a list of nodes and a list of edges, as in: ::
+
+    1 FirstNode
+    2 SecondNode
+    #
+    1 2 Edge
+
+To this format, a third column to the node list has been added to provide subnetwork information. Additionally, edges must provide a weight value: ::
+
+    1 FirstNode node_group
+    2 SecondNode node_group
+    #
+    1 2 Edge edge_weight
+
+A toy example with three subnetworks: ::
+
+    0 node_0 0
+    1 node_1 0
+    2 node_2 0
+    3 node_3 1
+    4 node_4 1
+    5 node_5 2
+    6 node_6 2
+    7 node_7 2
+    8 node_8 2
+    ##
+    1 2 0.25
+    0 2 0.88
+    3 4 1.00
+    5 7 0.52
+    7 8 0.52
+    6 8 0.52
+    0 3 1.00
+    2 4 1.00
+    1 7 1.00
+    4 6 1.00 
+    4 8 1.00
+
+Please note that node ids must be unique, even if they belong to different subnetworks. By default, ProphTools will use node identifiers, not labels (second column in txt file) as IDs for nodes. Optionally, you can use the ``--labels_as_ids`` parameter to use labels instead. Please note that in this case labels must be unique per node.
+
+GEXF file format
+----------------
+
+GEXF (https://gephi.org/gexf/format/) is an adaptation of XML used to specify graphs. As you can see in prophtools/matfiles/toy_example.gexf, ProphTools supported GEXF file needs that you include a 'group' label for each node, specifying which subnetwork each node belongs to, for instance, this would be a trivial GEXF file with only one subnetwork with two nodes: ::
+
+    <?xml version="1.0" encoding="UTF-8"?>
+    <gexf xmlns="http://www.gexf.net/1.2draft" version="1.2">
+    <meta lastmodifieddate="2017-09-04">
+    <creator>cnluzon</creator>
+    <description>Toy example gexf file to understand use with ProphTools</description>
+    </meta>
+    <graph defaultedgetype="undirected" mode="static">
+        <!-- Required: group attribute for each node -->
+        <attributes class="node">
+            <attribute id="0" title="group" type="integer"/>    
+        </attributes>
+        <nodes>
+            <node id="0" label="0_group_0">
+                <attvalue for="0" value="0"/>
+            </node>
+            <node id="1" label="1_group_0">
+                <attvalue for="0" value="0"/>
+            </node>
+        </nodes>
+
+        <edges>
+            <edge id="0" source="0" target="1" weight="0.25"/>
+        </edges>
+    
+    </graph>
+    </gexf>
+
+If you want to know more, see the two examples on the matfiles folder that comes with `ProphTools`.
+
+`ProphTools` will take as an input a .mat file containing your network configuration. In order to obtain this file, it is necessary that you run `ProphTools buildmat` as explained before. Once you have your `.mat` file, you can perform two types of tasks.
+
+
+Prioritize on a network configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`ProphTools` will take the aforementioned `mat` file and and three more required parameters: 
+
+* ``src``: source network, 
+* ``dst``: destination network, and
+* ``qindex`` or ``qname``: a list of indexes or ids separated by commas containing the source network
+node indexes that are going to be propagated.
+
+Note that ``src`` and ``dst`` correspond to the group index provided in the txt or gexf files.
 
 For instance: ::
 
-    prophtools prioritize --matfile network.mat --src 0 --dst 2 --qindex 1,2
+    prophtools prioritize --matfile example.mat --src 0 --dst 2 --qindex 1,2
 
 will return a scored list of nodes from the destination network and their
 correlation scores: ::
 
-    Entity  Score
-    c_00017   0.1016
-    c_00003   0.0902
-    c_00012   0.0581
-    c_00013   0.0545
-    c_00019   0.0461
+    Entity	Score
+    c_00003	0.105975
+    c_00017	0.104684
+    c_00015	0.070770
+    c_00012	0.040780
+    c_00002	0.031075
 
-Correlation score is a value between -1.0 and 1.0, as it correspond to pearson
-correlation (or spearman if specified.)
+    
+Or: ::
 
-Optionally, a --corr_function parameter can be provided to specify spearman
+    prophtools prioritize --matfile example.mat --src 0 --dst 2 --qname a_00001,a_00002
+
+will output the same result. Optionally, a ``out`` parameter can be provided to save all results as a comma-separated value ``csv`` file format.
+
+Correlation score is a value between -1.0 and 1.0, as it correspond to Pearson
+correlation (or Spearman if specified.)
+
+Optionally, a ``--corr_function`` parameter can be provided to specify spearman
 correlation: ::
 
     prophtools prioritize --matfile network.mat --src 0 --dst 2 --qindex 1,2 --corr_function spearman
 
-**Network configuration file format**
+Performance test on a network set
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Given an input .mat file, `ProphTools` can also give you an estimation on how
+well the propagation method predicts a certain connection by performing a 
+leave-one-out cross-validation on the relation you choose.
+
+The required parameters in this case are:
+
+* ``matfile``: Input ``mat`` network configuration file.
+* ``src``: Origin network (as specified by the ``group`` label in either ``GEXF`` or ``TXT`` file).
+* ``dst``: Destination network (as specified by the ``group`` label in either ``GEXF`` or ``TXT`` file).
+
+Optionally, you can specify:
+
+* ``cross```: Number of groups for the cross validation. 5 by default.
+* ``corr_function``: Correlation function used to compute final scores. By default, this is Pearson correlation. Optionally, you can specify spearman.
+
+For instance, to run ``ProphTools`` cross validation on the example data using spearman correlation function: ::
+
+    prophtools cross --matfile example.mat --src 0 --dst 2 --cross 5 --out results --corr_function spearman
+
+This will save some info in ``results.txt`` regarding AUC and Average ranking values per prioritization process, and also a results.svg ROC curve will be plotted. Note that this process is more time consuming than mere prioritization, because it runs a prioritization with every node on the source network.
+
+Using the defaults: ::
+
+    prophtools cross --matfile example.mat --src 0 --dst 2
+
+
+**APPENDIX: ProphTools native Network configuration file format**
+
+As of ``ProphTools`` v1.1, you are no longer required to build this data on your own. However,
+this description is kept for users that prefer this format to the text-based formats described before.
 
 The ``--matfile`` parameter is required for all prophtools function. It is a .mat 
 file that can be generated from scipy sparse matrices using the scipy.io
 module and its ``loadmat`` and ``savemat`` functions.
-
-The generality of ``ProphTools``prioritization requires you to provide some meta-data along with the
-adjacency matrices for the entities and the relations involved in your network configuration.
 
 ``scipy.io`` returns a dictionary where the keys are the names of the entities contained
 on the .mat file. In the case of ``ProphTools``, the meta-data must be: ::
@@ -213,31 +341,6 @@ On python command line: ::
     <50x50 sparse matrix of type '<type 'numpy.float64'>'
         with 1730 stored elements in Compressed Sparse Column format>
     
-
-Performance test on a network set
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Given an input .mat file, prophtools can also give you an estimation on how
-well the propagation method predicts a certain connection by performing a 
-leave-one-out cross-validation on the relation you choose.
-The required parameters in this case are: ::
-
-    matfile: Input network configuration file
-    src: Origin network
-    dst: Destination network
-
-Optionally, you can specify: ::
-
-    cross: Number of groups for the cross validation. By default, this is 5.
-    corr_function: Correlation function used to compute final scores. 
-                   By default, this is pearson correlation. Optionally, you can specify spearman.
-
-For instance, to run ``ProphTools`` cross validation on the example data using spearman correlation function: ::
-
-    prophtools cross --matfile example.mat --src 0 --dst 2 --cross 5 --out results --corr_function spearman
-    
-Using the defaults: ::
-
-    prophtools cross --matfile example.mat --src 0 --dst 2
     
 LncRNA-disease network
 ^^^^^^^^^^^^^^^^^^^^^^
