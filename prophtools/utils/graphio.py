@@ -30,11 +30,11 @@ def load_graph(filename, format="GEXF"):
         msg = "Unknown format: {}".format(format)
         raise TypeError(msg)
     
-    if format == "GEXF":
+    if format.lower() == "gexf":
         graph = nx.read_gexf(filename)
         load_node_attributes(graph, filename)
 
-    elif format == "TXT":
+    elif format.lower() == "txt":
         graph = read_txt_graph(filename)
 
     return graph
@@ -47,6 +47,7 @@ def read_txt_graph(filename):
     result_graph = nx.Graph()
     result_graph.add_nodes_from(node_list)
     result_graph.add_edges_from(edge_list)
+
 
     fi.close()
     return result_graph
@@ -132,9 +133,11 @@ def load_node_attributes(graph, filename):
     group_attribute_id = find_tag_attribute(attributes_list, 'group')
 
     node_attributes = {}
+    node_names = {}
     for n in nodes_list:
         node_id = n['@id']
-        node_name = n['@label']
+        node_name = n.get('@label', '')
+
         group_value = "0"
         if group_attribute_id:
             group_value = find_tag_value(n['attvalue'], group_attribute_id)
@@ -144,8 +147,10 @@ def load_node_attributes(graph, filename):
                 raise ValueError(msg)
 
         node_attributes[node_id] = group_value
+        node_names[node_id] = node_name
 
     nx.set_node_attributes(graph, 'group', node_attributes)
+    nx.set_node_attributes(graph, 'label', node_names)
 
     return graph
 
@@ -175,17 +180,21 @@ def separate_node_tags_per_group(graph):
     node_list = graph.nodes()
     for n in node_list:
         group_tag = graph.node[n]['group']
+        node_label = graph.node[n].get('label', '')
         try:
-            groups[group_tag].append(n)
+            groups[group_tag].append((n, node_label))
         except KeyError:
-            groups[group_tag] = [n]
+            groups[group_tag] = [(n, node_label)]
 
     return groups
 
-def build_within_group_matrix(graph, group_node_list, group_tag, precompute=False):
+def build_within_group_matrix(graph, group_node_list, group_tag, precompute=False, labels_as_ids=False):
     result_mat = []
     adj_mat = nx.adjacency_matrix(graph).todense()
+
     global_node_list = graph.nodes()
+    if labels_as_ids:
+        global_node_list = [graph.node[n]['label'] for n in global_node_list]
 
     indices = [global_node_list.index(n) for n in group_node_list]
 
@@ -199,10 +208,12 @@ def build_within_group_matrix(graph, group_node_list, group_tag, precompute=Fals
 
     return entity 
 
-def build_across_groups_matrix(graph, src_node_list, dst_node_list, relation_tag):
+def build_across_groups_matrix(graph, src_node_list, dst_node_list, relation_tag, labels_as_ids=False):
     result_mat = []
     adj_mat = nx.adjacency_matrix(graph).todense()
     global_node_list = graph.nodes()
+    if labels_as_ids:
+        global_node_list = [graph.node[n]['label'] for n in global_node_list]
 
     src_indices = [global_node_list.index(n) for n in src_node_list]
     dst_indices = [global_node_list.index(n) for n in dst_node_list]
@@ -215,7 +226,7 @@ def build_across_groups_matrix(graph, src_node_list, dst_node_list, relation_tag
     else:
         return None
 
-def convert_to_graphdataset(graph, precompute=False):
+def convert_to_graphdataset(graph, precompute=False, labels_as_ids=False):
     converted_object = None
 
     networks = []
@@ -229,11 +240,23 @@ def convert_to_graphdataset(graph, precompute=False):
 
     if len(groups_list) > 10:
         msg = "WARNING: Number of groups higher than 10."
-        msg += " Please, check that group tag in the XML file corresponds to the different types of entities, not to node ID"
+        msg += " Please, check that group tag in the input file corresponds to the different types of entities, not to node ID"
         raise ValueError(msg)
 
     for g in groups_list:
-        m = build_within_group_matrix(graph, groups[g], g, precompute=precompute)
+        id_list = []
+        if labels_as_ids:
+            id_list = [v[1] for v in groups[g]]
+            if len(id_list) > len(set(id_list)):
+                msg = """Repeated labels on the id_list for {}. If you use labels_as_ids,
+                all labels provided must be unique. Id list obtained: {}""".format(
+                    g, str(id_list))
+                raise ValueError(msg)
+
+        else:
+            id_list = [v[0] for v in groups[g]]
+
+        m = build_within_group_matrix(graph, id_list, g, precompute=precompute, labels_as_ids=labels_as_ids)
         networks.append(m)
 
     # super-adjacency matrix is a |groups|x|groups| matrix
@@ -245,7 +268,16 @@ def convert_to_graphdataset(graph, precompute=False):
             src_tag = groups_list[i]
             dst_tag = groups_list[j]
             relation_tag = "{}_{}".format(src_tag, dst_tag)
-            m = build_across_groups_matrix(graph, groups[src_tag], groups[dst_tag], relation_tag)
+            src_id_list = []
+            dst_id_list = []
+            if labels_as_ids:
+                src_id_list = [v[1] for v in groups[src_tag]]
+                dst_id_list = [v[1] for v in groups[dst_tag]]
+            else:
+                src_id_list = [v[0] for v in groups[src_tag]]
+                dst_id_list = [v[0] for v in groups[dst_tag]]
+
+            m = build_across_groups_matrix(graph, src_id_list, dst_id_list, relation_tag, labels_as_ids=labels_as_ids)
             if m:
                 relations.append(m)
                 connections_mat[i,j] = len(relations)-1

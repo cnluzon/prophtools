@@ -41,10 +41,12 @@ class PreprocessXMLExperiment(Experiment):
 
     def _load_parameters(self, section):
         params = {}
-        params['xmlfile'] = self.config.get(section, "xmlfile")
+        params['file'] = self.config.get(section, "file")
         params['precompute'] = self.config.get(section, "precompute").lower() in ['true', '1', 'yes']
         params['out'] = self.config.get(section, "out")
+        params['format'] = self.config.get(section, "format")
         params['data_path'] = self.config.get(section, "data_path")
+        params['labels_as_ids'] = self.config.get(section, "labels_as_ids").lower() in ['true', '1', 'yes']
         return params
 
     def experiment(self, extra_params):
@@ -54,20 +56,23 @@ class PreprocessXMLExperiment(Experiment):
         """
         self.log.info("Running preprocess xml experiment.")
         self.log.info("Parsing from config file.")
-        required = ['xmlfile', 'out', 'precompute']
+        required = ['file', 'out', 'precompute']
 
         if self._are_required_parameters_valid(self.config, required):
             cfg_params = self._load_parameters(self.params_section)
-            xmlfile = cfg_params['xmlfile']
+            file = cfg_params['file']
+            format = cfg_params['format']
+            labels_as_ids = cfg_params['labels_as_ids']
             outfile = cfg_params['out']
             cfg_precompute = cfg_params['precompute']
             path = cfg_params['data_path']
 
-            self.log.info("Reading GEXF file format")
-            graph = graphio.load_graph(xmlfile)
+            self.log.info("Reading file format")
+            graph = graphio.load_graph(file, format=format)
 
             self.log.info("Converting to ProphTools format")
-            converted = graphio.convert_to_graphdataset(graph, precompute=cfg_precompute)
+
+            converted = graphio.convert_to_graphdataset(graph, precompute=cfg_precompute, labels_as_ids=labels_as_ids)
 
             self.log.info("Writing mat file")
             converted.write(path, outfile)

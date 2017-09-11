@@ -20,7 +20,9 @@ class TestPreprocessXMLExperimentFunctions(unittest.TestCase):
 [build_matrices]
 data_path = .
 precompute = True
-xmlfile = 
+file =
+format = gexf 
+labels_as_ids = False
 out =
 """
         self.tempdir = tempfile.mkdtemp()
@@ -63,7 +65,7 @@ out =
         exp = preprocessxml.PreprocessXMLExperiment(cfg_path, 'build_matrices', self.log, section_name='build_matrices')
         matfile = os.path.join(self.tempdir, 'mockmat.mat')
 
-        parameters = ['--xmlfile', self.mock_file, '--out', 'test.mat', '--precompute', 'True']
+        parameters = ['--file', self.mock_file, '--out', 'test.mat', '--precompute', 'True']
         sys.stdout = StringIO.StringIO()
         sys.stderr = StringIO.StringIO()
         result = exp.run(parameters, self.configname)
@@ -71,7 +73,7 @@ out =
         sys.stderr = sys.__stderr__
         sys.stdout = sys.__stdout__
 
-        mock_load.assert_called_with(self.mock_file)
+        mock_load.assert_called_with(self.mock_file, format="gexf")
         mock_convert.assert_called()
         mock_load.assert_called()
         

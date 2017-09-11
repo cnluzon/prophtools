@@ -21,8 +21,11 @@ class TestGraphIOFunctions(unittest.TestCase):
         self.test_three_group_two_relations_gexf_file = os.path.join(self.test_dir, 'temp3.gexf')
         self.test_out_file = os.path.join(self.test_dir, 'temp_out.mat')
         self.test_no_attr_file = os.path.join(self.test_dir, 'no_attribute.gexf')
+        self.test_no_label_file = os.path.join(self.test_dir, 'no_label.gexf')
 
         self.test_missing_attr_file = os.path.join(self.test_dir, 'missing_attr.gexf')
+        self.test_repeated_id_file = os.path.join(self.test_dir, 'repeated_id.gexf')
+        self.test_repeated_label_file = os.path.join(self.test_dir, 'repeated_label.gexf')
 
         self.test_txt_file = os.path.join(self.test_dir, 'temp.txt')
         self.test_txt_missing_group_file = os.path.join(self.test_dir, 'temp2.txt')
@@ -38,6 +41,9 @@ class TestGraphIOFunctions(unittest.TestCase):
         self._write_txt_file(self.test_txt_file)
         self._write_txt_file_no_group(self.test_txt_no_group_file)
         self._write_txt_file_missing_group(self.test_txt_missing_group_file)
+        self._write_gexf_file_no_label_attribute(self.test_no_label_file)
+        self._write_repeated_id_txt_file(self.test_repeated_id_file)
+        self._write_repeated_label_gexf_file(self.test_repeated_label_file)
 
     def _write_txt_file(self, filename):
         value = """0 node_0 0
@@ -117,6 +123,32 @@ class TestGraphIOFunctions(unittest.TestCase):
         fo.write(value)
         fo.close()
 
+    def _write_repeated_id_txt_file(self, filename):
+        value = """0 node_0 0
+1 node_1 0
+2 node_2 0
+2 node_3 1
+4 node_4 1
+5 node_5 2
+6 node_6 2
+7 node_7 2
+8 node_8 2
+##
+1 2 0.25
+0 2 0.88
+3 4 1.00
+5 7 0.52
+7 8 0.52
+6 8 0.52
+0 3 1.00
+2 4 1.00
+1 7 1.00
+4 6 1.00 
+4 8 1.00"""
+        fo = open(filename, 'w')
+        fo.write(value)
+        fo.close()
+
     def _write_gexf_file_missing_attributes(self, filename):
         value = """<?xml version="1.0" encoding="UTF-8"?>
 <gexf xmlns="http://www.gexf.net/1.2draft" version="1.2">
@@ -142,6 +174,51 @@ class TestGraphIOFunctions(unittest.TestCase):
             <attvalue for="1" value="0"/>
         </node>
         <node id="3" label="Maria Lopez">
+            <attvalue for="0" value="1"/>
+            <attvalue for="1" value="0"/>
+        </node>            
+    </nodes>
+
+    <edges>
+        <edge id="0" source="0" target="1" weight="0.25"/>
+        <edge id="1" source="0" target="3" weight="0.88"/>
+        <edge id="2" source="2" target="3" weight="1.00"/>
+        <edge id="3" source="1" target="2" weight="0.52"/>           
+    </edges>
+
+</graph>
+</gexf>
+    """
+        fo = open(filename, 'w')
+        fo.write(value)
+        fo.close()
+
+
+    def _write_gexf_file_no_label_attribute(self, filename):
+        value = """<?xml version="1.0" encoding="UTF-8"?>
+<gexf xmlns="http://www.gexf.net/1.2draft" version="1.2">
+<meta lastmodifieddate="2014-01-30">
+<creator>Gephi 0.8.1</creator>
+<description></description>
+</meta>
+<graph defaultedgetype="undirected" mode="static">
+    <attributes class="node">
+        <attribute id="1" title="group" type="integer"/>
+    </attributes>
+    <nodes>
+        <node id="0">
+            <attvalue for="0" value="0"/>
+            <attvalue for="1" value="0"/>
+        </node>
+        <node id="1">
+            <attvalue for="0" value="0"/>
+            <attvalue for="1" value="0"/>
+        </node>
+        <node id="2">
+            <attvalue for="0" value="1"/>
+            <attvalue for="1" value="0"/>
+        </node>
+        <node id="3">
             <attvalue for="0" value="1"/>
             <attvalue for="1" value="0"/>
         </node>            
@@ -253,6 +330,51 @@ class TestGraphIOFunctions(unittest.TestCase):
         fo.write(value)
         fo.close()
 
+
+    def _write_repeated_label_gexf_file(self, filename):
+        value = """<?xml version="1.0" encoding="UTF-8"?>
+<gexf xmlns="http://www.gexf.net/1.2draft" version="1.2">
+<meta lastmodifieddate="2014-01-30">
+<creator>Gephi 0.8.1</creator>
+<description></description>
+</meta>
+<graph defaultedgetype="undirected" mode="static">
+    <attributes class="node">
+        <attribute id="0" title="group" type="integer"/>
+        <attribute id="1" title="other" type="integer"/>
+    </attributes>
+    <nodes>
+        <node id="0" label="Mark Johnson">
+            <attvalue for="0" value="0"/>
+            <attvalue for="1" value="0"/>
+        </node>
+        <node id="1" label="Mark Johnson">
+            <attvalue for="0" value="0"/>
+            <attvalue for="1" value="0"/>
+        </node>
+        <node id="2" label="Ed Lopez">
+            <attvalue for="0" value="1"/>
+            <attvalue for="1" value="0"/>
+        </node>
+        <node id="3" label="Maria Lopez">
+            <attvalue for="0" value="1"/>
+            <attvalue for="1" value="0"/>
+        </node>            
+    </nodes>
+
+    <edges>
+        <edge id="0" source="0" target="1" weight="0.25"/>
+        <edge id="1" source="0" target="3" weight="0.88"/>
+        <edge id="2" source="2" target="3" weight="1.00"/>
+        <edge id="3" source="1" target="2" weight="0.52"/>           
+    </edges>
+
+</graph>
+</gexf>
+    """
+        fo = open(filename, 'w')
+        fo.write(value)
+        fo.close()
 
     def _write_sample_three_group_gexf_file(self, filename):
         value =  """<?xml version="1.0" encoding="UTF-8"?>
@@ -590,7 +712,28 @@ class TestGraphIOFunctions(unittest.TestCase):
         self.assertEquals(graph.node['0']['group'], '0')
         self.assertEquals(graph.node['1']['group'], '0')
         self.assertEquals(graph.node['2']['group'], '0')
-        self.assertEquals(graph.node['3']['group'], '1')      
+        self.assertEquals(graph.node['3']['group'], '1')
+
+    def test_labels_txt_are_loaded(self):
+        graph = graphio.load_graph(self.test_txt_file, format='TXT')
+        self.assertEquals(graph.node['0']['label'], 'node_0')
+        self.assertEquals(graph.node['1']['label'], 'node_1')
+        self.assertEquals(graph.node['2']['label'], 'node_2')
+        self.assertEquals(graph.node['3']['label'], 'node_3')
+
+    def test_labels_gexf_are_loaded(self):
+        graph = graphio.load_graph(self.test_file, format='GEXF')
+        self.assertEquals(graph.node['0']['label'], 'Mark Johnson')
+        self.assertEquals(graph.node['1']['label'], 'Jane Schwartz')
+        self.assertEquals(graph.node['2']['label'], 'Ed Lopez')
+        self.assertEquals(graph.node['3']['label'], 'Maria Lopez')
+
+    def test_gexf_file_with_no_label_attr_loads_empty_strings(self):
+        graph = graphio.load_graph(self.test_no_label_file, format='GEXF')
+        self.assertEquals(graph.node['0']['label'], '')
+        self.assertEquals(graph.node['1']['label'], '')
+        self.assertEquals(graph.node['2']['label'], '')
+        self.assertEquals(graph.node['3']['label'], '')        
 
     def test_file_with_no_group_attribute_assigns_same_to_all(self):
         graph = graphio.load_graph(self.test_no_attr_file)
@@ -613,6 +756,15 @@ class TestGraphIOFunctions(unittest.TestCase):
     def test_file_with_missing_group_attributes_raises_exception(self):
         with self.assertRaises(ValueError):
             graph = graphio.load_graph(self.test_missing_attr_file)
+
+    def test_txt_file_with_non_unique_ids_raises_exception(self):
+        with self.assertRaises(ValueError):
+            graph = graphio.load_graph(self.test_repeated_id_file, format="TXT")
+
+    def test_convert_to_graphdata_raises_exception_on_repeated_labels(self):
+        graph = graphio.load_graph(self.test_repeated_label_file, format='GEXF')
+        with self.assertRaises(ValueError):
+            converted_graph = graphio.convert_to_graphdataset(graph, labels_as_ids=True)   
 
     def test_convert_to_graphdata_returns_graphdataset_object(self):
         graph = graphio.load_graph(self.test_three_group_gexf_file, format='GEXF')

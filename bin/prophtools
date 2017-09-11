@@ -88,7 +88,7 @@ usage: prophtools <subcommand> options
     The prophtools subcommands include:
         prioritize   Perform prioritization on a set of networks.
         cross        Perform LOO-cross validation for a given network setup.
-        gexf2mat     Convert a XML GEXF file to .mat file used by ProphTools.
+        buildmat     Convert a compatible file to a .mat used by ProphTools.
         precompute   Precompute a certain matrix in a .mat file.
     """
     return help_
@@ -116,7 +116,7 @@ if __name__ == "__main__":
 
     parser.add_argument('subcommand',
                         help='command to execute.',
-                        choices=['prioritize', 'cross', 'precompute', 'gexf2mat'],
+                        choices=['prioritize', 'cross', 'precompute', 'buildmat'],
                         default='prioritize',
                         nargs='?')
 
@@ -180,10 +180,7 @@ if __name__ == "__main__":
 
     log.debug(np.__version__)
 
-    # default_config_path = os.path.join(current_file_dir, os.path.normpath('prophtools/config'))
     default_config_file = resource_filename('prophtools', default_config_name)
-    # default_config_file = os.path.join(os.path.normpath(default_config_path),
-    #                                    default_config_name)
 
     if not validation.check_file_exists(default_config_file, log):
         msg = "Unable to open file {}".format(default_config_file)
@@ -207,7 +204,7 @@ if __name__ == "__main__":
                                                     log,
                                                     section_name='precompute'),
 
-        'gexf2mat': PreprocessXMLExperiment(default_config_file,
+        'buildmat': PreprocessXMLExperiment(default_config_file,
                                             exp_id,
                                             log,
                                             section_name='build_matrices')
