@@ -21,7 +21,7 @@ class TestLOOExperimentFunctions(unittest.TestCase):
         config_test_data = """
 [cross]
 data_path = .
-extreme = False
+mode = normal
 fold =
 corr_function = pearson
 matfile =
@@ -82,7 +82,7 @@ profile = False
                                                      fold=5,
                                                      corr_function='pearson',
                                                      out='stats',
-                                                     extreme=False)
+                                                     mode='normal')
         
         self.assertEqual(result, 0)
 

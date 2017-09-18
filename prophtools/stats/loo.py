@@ -33,8 +33,8 @@ Required parameters:
     src    : Source network (as an index)
     dst    : Destination network (as an index)
     cross  : Number of groups ([2,20])
-    extreme: Perform extreme LOO (remove not only test edge, but all edges
-             connecting involved nodes.)
+    mode   : How many edges are removed. normal: only test edge. extreme: all edges
+             connecting involved nodes. semi: all edges connecting involved nodes only in propagation direction.
     out    : Name of the output files prefix (no extension). Three files will
              be generated: a .svg containing a ROC curve, a .txt containing the
              fpr/tpr values used to generate the plot and a .txt containing
@@ -59,7 +59,7 @@ Optional parameters:
             result['fold'] = int(cross)
         result['out'] = self.config.get(section, 'out')
         result['corr_function'] = self.config.get(section, 'corr_function')
-        result['extreme'] = self.config.get(section, 'extreme').lower() in ['true', 'yes', '1']
+        result['mode'] = self.config.get(section, 'mode').lower() 
         
         result['memsave'] = self.config.get(section, 'memsave').lower() in ['yes','true','1']
         result['profile'] = self.config.get(section, 'profile').lower() in ['yes','true','1']
@@ -99,9 +99,9 @@ Optional parameters:
 
             src = cfg_params['src']
             dst = cfg_params['dst']
-            extreme = cfg_params['extreme']
+            mode = cfg_params['mode']
 
-            self.log.info("Performing LOO-CV test: {}->{}.".format(src, dst))
+            self.log.info("Performing CV test: {}->{}.".format(src, dst))
 
             prioritizer = method.ProphNet(network_data)
 
@@ -110,7 +110,7 @@ Optional parameters:
                 src, dst, fold=cfg_params.get('fold', 5),
                 out=cfg_params['out'],
                 corr_function=cfg_params['corr_function'],
-                extreme=extreme)
+                mode=mode)
 
 
             # if cfg_params['memsave']:

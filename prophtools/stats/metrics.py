@@ -55,7 +55,7 @@ class PrioritizationTest:
 
         return old_values
 
-    def remove_all_edges(self, matrix, test_edges):
+    def remove_all_edges(self, matrix, test_edges, semi=False):
         """
         Remove all edges connecting entities connected by edges in the
         test_edges list. This means, if e in test_edges connects A and B,
@@ -63,9 +63,11 @@ class PrioritizationTest:
         """
         for edge in test_edges:
             matrix[edge[0], :] = 0
-            matrix[:, edge[1]] = 0
+            if not semi:
+                matrix[:, edge[1]] = 0
 
         return matrix
+
 
     def restore_test_edges(self, matrix, test_edges, values):
         for i, edge in enumerate(test_edges):
@@ -145,12 +147,13 @@ class PrioritizationTest:
 
         return mean_tpr, mean_fpr, mean_auc, np.mean(ranks)
 
-    def create_relation_copy_for_removal(self, tested_relation, test_edge_list, extreme=False):
+    def create_relation_copy_for_removal(self, tested_relation, test_edge_list, mode='normal'):
 
         relation_copy_for_removal = sparse.lil_matrix(tested_relation)
-        if extreme:
-            self.remove_all_edges(relation_copy_for_removal, test_edge_list)
-            
+        if mode.lower() == 'extreme':
+            self.remove_all_edges(relation_copy_for_removal, test_edge_list, semi=False)
+        elif mode.lower() == 'semi':
+            self.remove_all_edges(relation_copy_for_removal, test_edge_list, semi=True)
         else:
             old_values = self.remove_test_edges(relation_copy_for_removal,
                                                 test_edge_list)
@@ -159,9 +162,9 @@ class PrioritizationTest:
         return relation_copy_for_removal
 
     def run_cross_validation(self, origin, destination, fold=10, out='test.out',
-                             corr_function="pearson", extreme=False):
+                             corr_function="pearson", mode='normal'):
         """
-        Performs a LOO-CV experiments on the prioritizer, from origin matrix
+        Performs a CV experiments on the prioritizer, from origin matrix
         to destination matrix.
 
         Args:
@@ -210,7 +213,7 @@ class PrioritizationTest:
             relation_copy_for_removal = self.create_relation_copy_for_removal(
                 tested_relation,
                 test_edge_list,
-                extreme=extreme)
+                mode=mode)
 
             # For efficiency, transpose before setting
             if relation_direction == 0:

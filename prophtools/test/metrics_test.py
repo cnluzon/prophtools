@@ -82,7 +82,7 @@ class TestPrioritizationTestFunctions(unittest.TestCase):
         matrix = np.matrix([[1,0,0,1],[0,0,1,0],[0,0,0,0]])
         edges = [[0,0]]
         values  = [matrix[0,0]]
-        new_mat = self.prio_test.create_relation_copy_for_removal(matrix, edges, extreme=False)
+        new_mat = self.prio_test.create_relation_copy_for_removal(matrix, edges, mode='normal')
         expected = np.matrix([[0,0,0,1],[0,0,1,0],[0,0,0,0]])
         
         self.assertEqual(new_mat[0,0], expected[0,0])
@@ -92,7 +92,7 @@ class TestPrioritizationTestFunctions(unittest.TestCase):
         matrix = np.matrix([[1,0,0,1],[0,0,1,0],[0,0,0,0]])
         edges = [[0,0]]
         values  = [matrix[0,0]]
-        new_mat = self.prio_test.create_relation_copy_for_removal(matrix, edges, extreme=True)
+        new_mat = self.prio_test.create_relation_copy_for_removal(matrix, edges, mode='extreme')
         expected = np.matrix([[0,0,0,0],[0,0,1,0],[0,0,0,0]])
         
         self.assertEqual(new_mat[0,0], expected[0,0])
