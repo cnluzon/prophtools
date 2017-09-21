@@ -646,7 +646,7 @@ class TestGraphIOFunctions(unittest.TestCase):
                             [0.88, 0,    1.00,    0]])
 
         graph = graphio.load_graph(self.test_file, format='GEXF')
-        nodes = graph.nodes()
+        nodes = list(graph.nodes())
         adj_matrix = nx.adjacency_matrix(graph).todense()
         
         for i in range(result.shape[0]):
@@ -668,7 +668,7 @@ class TestGraphIOFunctions(unittest.TestCase):
                             [0.00, 0.00, 0.00, 0.00, 1.00, 0.00, 0.52, 0.52, 0.00]]) # 8
 
         graph = graphio.load_graph(self.test_txt_file, format='TXT')
-        nodes = graph.nodes()
+        nodes = list(graph.nodes())
         adj_matrix = nx.adjacency_matrix(graph).todense()
         
         for i in range(result.shape[0]):
@@ -691,7 +691,7 @@ class TestGraphIOFunctions(unittest.TestCase):
                             [0.00, 0.00, 0.00, 0.00, 1.00, 0.00, 0.52, 0.52, 0.00]]) # 8
 
         graph = graphio.load_graph(self.test_three_group_gexf_file, format='GEXF')
-        nodes = graph.nodes()
+        nodes = list(graph.nodes())
         adj_matrix = nx.adjacency_matrix(graph).todense()
         
         for i in range(result.shape[0]):

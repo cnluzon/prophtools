@@ -66,7 +66,9 @@ Requirements
     scipy (>=0.18.1)
     matplotlib (>=1.4.3)
     scikit-learn (>=0.18)
-    networkx (>=1.11) 
+    networkx (>=2.0) 
+
+**NOTE**: As of September 20, 2017, ``networkx`` v2.0 has been released. This new version is not totally compatible with previous versions. We have updated ProphTools to work with the newest version, so you will need to update your system to make ProphTools work properly.
 
 All requirements are included in the ``setup.py``. However, scipy documentation suggests installing it through ``apt-get``: <http://www.scipy.org/install.html>. If you run into problems with pip I recommend to previously install scipy, numpy and matplotlib through apt-get to ensure it will work: ::
 

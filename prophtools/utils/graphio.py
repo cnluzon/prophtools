@@ -149,8 +149,8 @@ def load_node_attributes(graph, filename):
         node_attributes[node_id] = group_value
         node_names[node_id] = node_name
 
-    nx.set_node_attributes(graph, 'group', node_attributes)
-    nx.set_node_attributes(graph, 'label', node_names)
+    nx.set_node_attributes(graph, name='group', values=node_attributes)
+    nx.set_node_attributes(graph, name='label', values=node_names)
 
     return graph
 
@@ -192,7 +192,7 @@ def build_within_group_matrix(graph, group_node_list, group_tag, precompute=Fals
     result_mat = []
     adj_mat = nx.adjacency_matrix(graph).todense()
 
-    global_node_list = graph.nodes()
+    global_node_list = list(graph.nodes())
     if labels_as_ids:
         global_node_list = [graph.node[n]['label'] for n in global_node_list]
 
@@ -211,7 +211,7 @@ def build_within_group_matrix(graph, group_node_list, group_tag, precompute=Fals
 def build_across_groups_matrix(graph, src_node_list, dst_node_list, relation_tag, labels_as_ids=False):
     result_mat = []
     adj_mat = nx.adjacency_matrix(graph).todense()
-    global_node_list = graph.nodes()
+    global_node_list = list(graph.nodes())
     if labels_as_ids:
         global_node_list = [graph.node[n]['label'] for n in global_node_list]
 
