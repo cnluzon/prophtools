@@ -140,6 +140,8 @@ Optional parameters:
             cfg_params = self._load_parameters("run")
             src_network =cfg_params['src']
             dst_network = cfg_params['dst']
+            src_index = -1
+            dst_index = -1
 
             self.log.info("Loading data.")
 

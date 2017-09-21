@@ -22,7 +22,7 @@ class TestLOOExperimentFunctions(unittest.TestCase):
 [cross]
 data_path = .
 mode = normal
-fold =
+fold = 5
 corr_function = pearson
 matfile =
 src =
@@ -90,7 +90,7 @@ profile = False
         cfg_path = os.path.join(self.tempdir, self.configname)
         exp = loo.LOOExperiment(cfg_path, 'cross', self.log, section_name='cross')
 
-        parameters = ['--query', '1', '--src', '0', '--dst', '1', '--matfile', 'test.mat', '--cross', '1']
+        parameters = ['--query', '1', '--src', '0', '--dst', '1', '--matfile', 'test.mat', '--fold', '1']
         sys.stdout = StringIO.StringIO()
         sys.stderr = StringIO.StringIO()
         result = exp.run(parameters, self.configname)

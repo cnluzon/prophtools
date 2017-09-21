@@ -51,8 +51,8 @@ Optional parameters:
     def _load_parameters(self, section):
         result = {}
         result['data_path'] = self.config.get(section, 'data_path')
-        result['src'] = int(self.config.get(section, 'src'))
-        result['dst'] = int(self.config.get(section, 'dst'))
+        result['src'] = self.config.get(section, 'src')
+        result['dst'] = self.config.get(section, 'dst')
         result['matfile'] = self.config.get(section, 'matfile')
         cross = self.config.get(section, 'fold')
         if cross != '':
@@ -78,6 +78,12 @@ Optional parameters:
         if self._are_required_parameters_valid(self.config, required):
             cfg_params = self._load_parameters(self.params_section)
 
+            src_network = cfg_params['src']
+            dst_network = cfg_params['dst']
+            src_index = -1
+            dst_index = -1
+            cvfold = cfg_params['fold']
+
             self.log.info("Loading data...")
             if cfg_params.get('fold', None) is not None:
                 ok = validation.verify_numeric_value(cfg_params['fold'],
@@ -97,17 +103,35 @@ Optional parameters:
                                                        cfg_params['matfile'],
                                                        memsave=cfg_params['memsave'])
 
-            src = cfg_params['src']
-            dst = cfg_params['dst']
             mode = cfg_params['mode']
-
-            self.log.info("Performing CV test: {}->{}.".format(src, dst))
 
             prioritizer = method.ProphNet(network_data)
 
+
+            try:
+                src_index = int(src_network)
+            except ValueError:
+                self.log.debug('Considering src as network label')
+                src_index = network_data.get_network_index(src_network)
+
+            try:
+                dst_index = int(dst_network)
+            except ValueError:
+                self.log.debug('Considering dst as network label')
+                dst_index = network_data.get_network_index(dst_network)
+
+            if src_index == -1:
+                self.log.error('Source network not valid: {}. Exiting.'.format(src_network))
+                return -1
+            if dst_index == -1:
+                self.log.error('Destination network not valid: {}. Exiting.'.format(dst_network))
+                return -1
+
+
+            self.log.info("Performing CV test: {}->{}.".format(src_index, dst_index))
             prioritizer_test = metrics.PrioritizationTest(prioritizer, self.log)
             prioritizer_test.run_cross_validation(
-                src, dst, fold=cfg_params.get('fold', 5),
+                src_index, dst_index, fold=cvfold,
                 out=cfg_params['out'],
                 corr_function=cfg_params['corr_function'],
                 mode=mode)
