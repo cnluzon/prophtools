@@ -1,1 +1,3 @@
 include README.rst
+include prophtools/config/*.cfg
+include prophtools/matfiles/*
